@@ -31,7 +31,7 @@ public class Scene extends GridPanel {
         super.mouseClicked(e);
         Cell cell = getGrid()[getClickedI()][getClickedJ()];
         cell.setColor(Color.RED);
-        for (Cell neighbor : cell.getNeighbors(getGrid(), false)) {
+        for (Cell neighbor : cell.getNeighbors(getGrid(), true)) {
             neighbor.setColor(Color.BLUE);
         }
     }
