@@ -8,10 +8,17 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 
 public class GridPanel extends JPanel implements MouseListener, KeyListener {
-    private int N;
+    private int N, food = 0;
     private Cell[][] grid;
-    private double scaleX, scaleY;
+    protected double scaleX, scaleY;
     private int I, J;
+
+    public int getFood() {
+        return food;
+    }
+    public void addFood(int q) {
+        food += q;
+    }
 
     protected GridPanel(int N, double w, double h) {
         this.N = N;
