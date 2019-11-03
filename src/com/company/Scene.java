@@ -13,7 +13,7 @@ import java.util.Random;
 import java.util.stream.IntStream;
 
 public class Scene extends GridPanel {
-    protected Scene(int N, double w, double h) {
+    private Scene(int N, double w, double h) {
         super(N, w, h);
         this.pacman = new Player(0,0, N,this);
     }

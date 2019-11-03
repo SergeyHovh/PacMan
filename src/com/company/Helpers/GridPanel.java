@@ -10,10 +10,10 @@ import java.awt.event.MouseListener;
 public class GridPanel extends JPanel implements MouseListener, KeyListener {
     private int N, food = 0;
     private Cell[][] grid;
-    protected double scaleX, scaleY;
+    private double scaleX, scaleY;
     private int I, J;
 
-    public int getFood() {
+    protected int getFood() {
         return food;
     }
     public void addFood(int q) {
