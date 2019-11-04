@@ -9,7 +9,6 @@ import com.company.Models.Player;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.util.PrimitiveIterator;
 import java.util.Random;
 import java.util.Vector;
@@ -36,7 +35,9 @@ public class Scene extends GridPanel {
     }
 
     private void generateScene() {
-        pacman = new Player(n / 2, 4 * n / 5, n, this);
+        // creating the maze from a code generated hard coded array
+        generateMaze(Constants.MAP);
+        pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
         generateFood(5);
         generateEnemies(5);
         entities.addAll(foodVector);
@@ -47,12 +48,7 @@ public class Scene extends GridPanel {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                getGrid()[i][j].reset();
-            }
-        }
-
+        generateMaze(Constants.MAP);
         for (Entity entity : entities) {
             Cell cell = getGrid()[entity.getX()][entity.getY()];
             if (entity instanceof Player) {
@@ -66,11 +62,7 @@ public class Scene extends GridPanel {
         }
     }
 
-    @Override
-    public void mouseClicked(MouseEvent e) {
-        super.mouseClicked(e);
-    }
-
+    // listeners
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyTyped(e);
@@ -129,5 +121,17 @@ public class Scene extends GridPanel {
             }
         }
         enemyVector.addAll(enemy);
+    }
+
+    private void generateMaze(int[][] map) {
+        for (int i = 0; i < map.length; i++) {
+            for (int j = 0; j < map[0].length; j++) {
+                if (map[i][j] == 0) {
+                    getGrid()[i][j].setColor(Color.WHITE);
+                } else {
+                    getGrid()[i][j].setColor(Color.BLACK);
+                }
+            }
+        }
     }
 }
