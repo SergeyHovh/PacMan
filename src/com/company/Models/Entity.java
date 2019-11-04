@@ -1,29 +1,31 @@
 package com.company.Models;
 
 import com.company.Helpers.Cell;
-import com.company.Helpers.GridPanel;
+import com.company.Scene;
 
 import java.awt.*;
+import java.util.Objects;
 import java.util.Vector;
 
 public class Entity {
     int x, y, N;
     Cell[][] grid;
-    GridPanel panel;
+    Scene panel;
     Color color;
 
-    Entity(int x, int y, int n, GridPanel panel) {
+    Entity(int x, int y, int n, Scene panel) {
         this.x = x;
         this.y = y;
         N = n;
         this.panel = panel;
-        this.grid = panel.getGrid();
+        grid = panel.getGrid();
     }
 
     Vector<Cell> getNeighbours() {
         return grid[x][y].getNeighbors(panel.getGrid(), false);
     }
 
+    // getters and setters
     public int getX() {
         return x;
     }
@@ -56,11 +58,11 @@ public class Entity {
         this.grid = grid;
     }
 
-    public GridPanel getPanel() {
+    public Scene getPanel() {
         return panel;
     }
 
-    public void setPanel(GridPanel panel) {
+    public void setPanel(Scene panel) {
         this.panel = panel;
     }
 
@@ -70,5 +72,20 @@ public class Entity {
 
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        Entity entity = (Entity) o;
+        return getX() == entity.getX() &&
+                getY() == entity.getY() &&
+                getColor().equals(entity.getColor());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getX(), getY(), getColor());
     }
 }

@@ -8,6 +8,9 @@ import java.util.Vector;
 public class Cell extends Rectangle2D.Double {
     private Color color;
     private int i, j;
+    boolean enemy = false;
+    boolean pacman = false;
+    boolean food = false;
 
     public Cell(double x, double y, double w, double h) {
         super(x * w, y * h, w, h);
@@ -41,6 +44,13 @@ public class Cell extends Rectangle2D.Double {
         this.color = color;
     }
 
+    public void reset() {
+        color = Color.WHITE;
+        food = false;
+        enemy = false;
+        pacman = false;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -55,5 +65,29 @@ public class Cell extends Rectangle2D.Double {
     @Override
     public int hashCode() {
         return Objects.hash(super.hashCode(), color, i, j);
+    }
+
+    public boolean isPacman() {
+        return pacman;
+    }
+
+    public void setPacman(boolean pacman) {
+        this.pacman = pacman;
+    }
+
+    public boolean isFood() {
+        return food;
+    }
+
+    public void setFood(boolean food) {
+        this.food = food;
+    }
+
+    public boolean isEnemy() {
+        return enemy;
+    }
+
+    public void setEnemy(boolean enemy) {
+        this.enemy = enemy;
     }
 }

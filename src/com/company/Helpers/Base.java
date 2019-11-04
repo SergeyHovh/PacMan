@@ -17,6 +17,10 @@ public class Base extends JFrame {
         this(name, 640, 480);
     }
 
+    public Base(String name, int side) {
+        this(name, side, side);
+    }
+
     public void addComponent(Component comp) {
         super.add(comp);
         comp.setFocusable(true);

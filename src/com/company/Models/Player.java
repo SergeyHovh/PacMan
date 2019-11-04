@@ -1,15 +1,16 @@
 package com.company.Models;
 
-import com.company.Helpers.GridPanel;
+import com.company.Helpers.Cell;
+import com.company.Scene;
 
 import java.awt.*;
+import java.util.Vector;
 
 public class Player extends Entity {
     private int points = 0;
 
-    public Player(int x, int y, int N, GridPanel gridPanel) {
+    public Player(int x, int y, int N, Scene gridPanel) {
         super(x, y, N, gridPanel);
-//        grid[x][y].setColor(Color.YELLOW);
         color = Color.YELLOW;
     }
 
@@ -19,40 +20,43 @@ public class Player extends Entity {
 
     public void tryMoveLeft() {
         if (this.x > 0) {
-            this.x = this.x - 1;
-            if (this.grid[x][y].getColor() == Color.RED) {
-                points++;
-                panel.addFood(-1);
-            }
+            this.x--;
+            interact(this.x, this.y);
         }
     }
 
     public void tryMoveUp() {
         if (this.y > 0) {
-            this.y = this.y - 1;
-            if (this.grid[x][y].getColor() == Color.RED) {
-                points++;
-                panel.addFood(-1);
-            }
+            this.y--;
+            interact(this.x, this.y);
         }
     }
 
     public void tryMoveRight() {
         if (this.x < N - 1) {
-            this.x = this.x + 1;
-            if (this.grid[x][y].getColor() == Color.RED) {
-                points++;
-                panel.addFood(-1);
-            }
+            this.x++;
+            interact(this.x, this.y);
         }
     }
 
     public void tryMoveDown() {
         if (this.y < N - 1) {
-            this.y = this.y + 1;
-            if (this.grid[x][y].getColor() == Color.RED) {
-                points++;
-                panel.addFood(-1);
+            this.y++;
+            interact(this.x, this.y);
+        }
+    }
+
+    private void interact(int x, int y) {
+        Cell cell = grid[x][y];
+        if (cell.isFood()) {
+            points++;
+            panel.addFood(-1);
+            Vector<Entity> foodVector = panel.entities;
+            for (int i = 0; i < foodVector.size(); i++) {
+                Entity food = foodVector.get(i);
+                if (food.getX() == x && food.getY() == y && food instanceof Food) {
+                    panel.entities.remove(food);
+                }
             }
         }
     }

@@ -16,6 +16,7 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
     protected int getFood() {
         return food;
     }
+
     public void addFood(int q) {
         food += q;
     }
