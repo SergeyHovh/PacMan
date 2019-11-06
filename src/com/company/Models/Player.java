@@ -4,7 +4,6 @@ import com.company.Helpers.Cell;
 import com.company.Scene;
 
 import java.awt.*;
-import java.util.Vector;
 
 public class Player extends Entity {
     private int points = 0;
@@ -49,16 +48,16 @@ public class Player extends Entity {
     private void interact(int x, int y) {
         Cell cell = grid[x][y];
         if (cell.isFood()) {
-            Vector<Entity> foodVector = panel.entities;
-            for (int i = 0; i < foodVector.size(); i++) {
-                Entity food = foodVector.get(i);
-                if (food.getX() == x && food.getY() == y && food instanceof Food) {
-                    panel.entities.remove(food);
-                    points++;
-                    panel.addFood(-1);
-                    System.out.println(points);
-                }
-            }
+            panel.entities.remove(new Food(x, y, N, panel));
+            points++;
+            panel.addFood(-1);
+            System.out.println(points);
+        } else if (cell.isEnemy()) {
+//             TODO: 11/6/2019 implement better enemy interaction
+//            enemy interaction
+            panel.entities.remove(new Enemy(x, y, N, panel));
+            points--;
+            System.out.println(points);
         }
     }
 }

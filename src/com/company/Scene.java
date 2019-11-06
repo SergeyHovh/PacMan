@@ -22,10 +22,9 @@ public class Scene extends GridPanel implements ActionListener {
     private Vector<Food> foodVector = new Vector<>();
     private Vector<Enemy> enemyVector = new Vector<>();
     private Player pacman;
-    private int tick = 0;
-    private int n;
-    private Timer timer = new Timer(200, this);
+    Timer timer = new Timer(200, this);
     private int xDir = 1, yDir = 0;
+    private int tick = 0, n;
 
     Scene(int N, double w, double h) {
         super(N, w, h);
@@ -36,7 +35,6 @@ public class Scene extends GridPanel implements ActionListener {
     Scene(int N, double s) {
         super(N, s, s);
         this.n = N;
-        timer.start();
         generateScene();
     }
 
@@ -70,13 +68,13 @@ public class Scene extends GridPanel implements ActionListener {
 
     private void movePacman(int x, int y) {
         if (x == 1) {
-            this.pacman.tryMoveRight();
+            pacman.tryMoveRight();
         } else if (x == -1) {
-            this.pacman.tryMoveLeft();
+            pacman.tryMoveLeft();
         } else if (y == 1) {
-            this.pacman.tryMoveUp();
+            pacman.tryMoveUp();
         } else if (y == -1) {
-            this.pacman.tryMoveDown();
+            pacman.tryMoveDown();
         }
     }
 
@@ -104,6 +102,9 @@ public class Scene extends GridPanel implements ActionListener {
 //                this.pacman.tryMoveRight();
                 xDir = 1;
                 yDir = 0;
+                break;
+            case KeyEvent.VK_SPACE:
+                timer.start();
                 break;
         }
         tick++;
@@ -149,6 +150,12 @@ public class Scene extends GridPanel implements ActionListener {
         enemyVector.addAll(enemy);
     }
 
+    /**
+     * draws the maze with given map, where 1 is wall (uncrossable)
+     * and 0 is floor (passable)
+     *
+     * @param map 2D int array of 0s and 1s
+     */
     private void generateMaze(int[][] map) {
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map[0].length; j++) {

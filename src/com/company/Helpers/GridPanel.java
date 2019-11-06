@@ -49,22 +49,21 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
     }
 
     /**
-     * @return returns a 2D array of @{@link Cell}s
+     * @return 2D array of {@link Cell}s
      */
     public Cell[][] getGrid() {
         return grid;
     }
 
-
     /**
-     * @return returns the first index of the clicked place
+     * @return first index of the clicked place
      */
     public int getClickedI() {
         return I;
     }
 
     /**
-     * @return returns the second index of the clicked place
+     * @return second index of the clicked place
      */
     public int getClickedJ() {
         return J;
