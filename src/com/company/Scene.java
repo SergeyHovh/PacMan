@@ -40,7 +40,6 @@ public class Scene extends GridPanel implements ActionListener {
 
     private void generateScene() {
         // creating the maze from a code generated hard coded array
-        generateMaze(Constants.MAP);
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
         generateFood(5);
         generateEnemies(5);
@@ -52,7 +51,10 @@ public class Scene extends GridPanel implements ActionListener {
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        // draw the maze
         generateMaze(Constants.MAP);
+
+        // draw the entities
         for (Entity entity : entities) {
             Cell cell = getGrid()[entity.getX()][entity.getY()];
             if (entity instanceof Player) {
@@ -107,12 +109,6 @@ public class Scene extends GridPanel implements ActionListener {
                 timer.start();
                 break;
         }
-        tick++;
-        if (tick / 10 >= 1 && this.getFood() < 3) {
-            generateFood(1);
-            entities.add(foodVector.lastElement());
-            tick = 0;
-        }
     }
 
     private void generateFood(int quantity) {
@@ -159,10 +155,15 @@ public class Scene extends GridPanel implements ActionListener {
     private void generateMaze(int[][] map) {
         for (int i = 0; i < map.length; i++) {
             for (int j = 0; j < map[0].length; j++) {
+                Cell cell = getGrid()[i][j];
                 if (map[i][j] == 0) {
-                    getGrid()[i][j].setColor(Color.WHITE);
+                    cell.setColor(Color.WHITE);
+                    cell.setFood(false);
+                    cell.setEnemy(false);
+                    cell.setPacman(false);
                 } else {
-                    getGrid()[i][j].setColor(Color.BLACK);
+                    cell.setColor(Color.BLACK);
+                    cell.setWall(true);
                 }
             }
         }
@@ -172,6 +173,12 @@ public class Scene extends GridPanel implements ActionListener {
     public void actionPerformed(ActionEvent actionEvent) {
         // dynamic change
         movePacman(xDir, yDir);
+        tick++;
+        if (tick / 10 >= 1 && this.getFood() < 3) {
+            generateFood(1);
+            entities.add(foodVector.lastElement());
+            tick = 0;
+        }
         repaint();
     }
 }

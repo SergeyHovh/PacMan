@@ -11,6 +11,8 @@ public class Cell extends Rectangle2D.Double {
     boolean enemy = false;
     boolean pacman = false;
     boolean food = false;
+    boolean wall = false;
+
 
     public Cell(double x, double y, double w, double h) {
         super(x * w, y * h, w, h);
@@ -89,5 +91,13 @@ public class Cell extends Rectangle2D.Double {
 
     public void setEnemy(boolean enemy) {
         this.enemy = enemy;
+    }
+
+    public boolean isWall() {
+        return wall;
+    }
+
+    public void setWall(boolean wall) {
+        this.wall = wall;
     }
 }
