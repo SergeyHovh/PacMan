@@ -11,7 +11,7 @@ public class Player extends Entity {
 
     public Player(int x, int y, int N, Scene gridPanel) {
         super(x, y, N, gridPanel);
-        color = Color.YELLOW;
+        color = Color.BLUE;
     }
 
     public int getPoints() {
@@ -49,13 +49,14 @@ public class Player extends Entity {
     private void interact(int x, int y) {
         Cell cell = grid[x][y];
         if (cell.isFood()) {
-            points++;
-            panel.addFood(-1);
             Vector<Entity> foodVector = panel.entities;
             for (int i = 0; i < foodVector.size(); i++) {
                 Entity food = foodVector.get(i);
                 if (food.getX() == x && food.getY() == y && food instanceof Food) {
                     panel.entities.remove(food);
+                    points++;
+                    panel.addFood(-1);
+                    System.out.println(points);
                 }
             }
         }

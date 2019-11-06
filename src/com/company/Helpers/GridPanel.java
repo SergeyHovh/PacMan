@@ -72,7 +72,6 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        repaint();
     }
 
     @Override
@@ -80,12 +79,11 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
         // actual computing the i and j coordinates
         this.I = (int) (e.getX() / scaleX);
         this.J = (int) (e.getY() / scaleY);
-        repaint();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        repaint();
+
     }
 
     @Override
@@ -99,16 +97,13 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {
-        repaint();
     }
 
     @Override
     public void keyPressed(KeyEvent keyEvent) {
-        repaint();
     }
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {
-        repaint();
     }
 }

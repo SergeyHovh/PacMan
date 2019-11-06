@@ -7,20 +7,25 @@ import com.company.Models.Entity;
 import com.company.Models.Food;
 import com.company.Models.Player;
 
+import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.PrimitiveIterator;
 import java.util.Random;
 import java.util.Vector;
 import java.util.stream.IntStream;
 
-public class Scene extends GridPanel {
+public class Scene extends GridPanel implements ActionListener {
     public Vector<Entity> entities = new Vector<>();
     private Vector<Food> foodVector = new Vector<>();
     private Vector<Enemy> enemyVector = new Vector<>();
     private Player pacman;
     private int tick = 0;
     private int n;
+    private Timer timer = new Timer(200, this);
+    private int xDir = 1, yDir = 0;
 
     Scene(int N, double w, double h) {
         super(N, w, h);
@@ -31,6 +36,7 @@ public class Scene extends GridPanel {
     Scene(int N, double s) {
         super(N, s, s);
         this.n = N;
+        timer.start();
         generateScene();
     }
 
@@ -62,22 +68,42 @@ public class Scene extends GridPanel {
         }
     }
 
+    private void movePacman(int x, int y) {
+        if (x == 1) {
+            this.pacman.tryMoveRight();
+        } else if (x == -1) {
+            this.pacman.tryMoveLeft();
+        } else if (y == 1) {
+            this.pacman.tryMoveUp();
+        } else if (y == -1) {
+            this.pacman.tryMoveDown();
+        }
+    }
+
     // listeners
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyTyped(e);
         switch (e.getKeyCode()) {
             case KeyEvent.VK_DOWN:
-                this.pacman.tryMoveDown();
+//                this.pacman.tryMoveDown();
+                xDir = 0;
+                yDir = -1;
                 break;
             case KeyEvent.VK_UP:
-                this.pacman.tryMoveUp();
+//                this.pacman.tryMoveUp();
+                xDir = 0;
+                yDir = 1;
                 break;
             case KeyEvent.VK_LEFT:
-                this.pacman.tryMoveLeft();
+//                this.pacman.tryMoveLeft();
+                xDir = -1;
+                yDir = 0;
                 break;
             case KeyEvent.VK_RIGHT:
-                this.pacman.tryMoveRight();
+//                this.pacman.tryMoveRight();
+                xDir = 1;
+                yDir = 0;
                 break;
         }
         tick++;
@@ -133,5 +159,12 @@ public class Scene extends GridPanel {
                 }
             }
         }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent actionEvent) {
+        // dynamic change
+        movePacman(xDir, yDir);
+        repaint();
     }
 }
