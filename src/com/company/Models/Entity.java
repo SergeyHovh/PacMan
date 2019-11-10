@@ -2,6 +2,7 @@ package com.company.Models;
 
 import com.company.Helpers.Cell;
 import com.company.Scene;
+import com.company.Search.Node;
 
 import java.awt.*;
 import java.util.Objects;

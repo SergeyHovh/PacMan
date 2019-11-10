@@ -1,11 +1,14 @@
 package com.company.Helpers;
 
+import com.company.Search.Action;
+import com.company.Search.State;
+
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 import java.util.Vector;
 
-public class Cell extends Rectangle2D.Double {
+public class Cell extends Rectangle2D.Double implements Action {
     private Color color;
     private int i, j;
     boolean enemy = false;
@@ -13,12 +16,16 @@ public class Cell extends Rectangle2D.Double {
     boolean food = false;
     boolean wall = false;
 
-
     public Cell(double x, double y, double w, double h) {
         super(x * w, y * h, w, h);
         this.i = (int) x;
         this.j = (int) y;
         color = Color.WHITE;
+    }
+
+    @Override
+    public int cost() {
+        return 0;
     }
 
     public Vector<Cell> getNeighbors(Cell[][] grid, boolean diagonals) {

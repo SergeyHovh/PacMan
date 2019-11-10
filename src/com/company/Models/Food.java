@@ -9,4 +9,12 @@ public class Food extends Entity {
         super(x, y, n, panel);
         color = Color.GREEN;
     }
+
+    public void tryMoveLeft() { }
+
+    public void tryMoveUp() { }
+
+    public void tryMoveRight() { }
+
+    public void tryMoveDown() { }
 }

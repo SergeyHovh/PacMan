@@ -2,26 +2,25 @@ package com.company;
 
 import com.company.Helpers.Cell;
 import com.company.Helpers.GridPanel;
-import com.company.Models.Enemy;
-import com.company.Models.Entity;
-import com.company.Models.Food;
-import com.company.Models.Player;
+import com.company.Models.*;
+import com.company.Search.*;
 
-import javax.swing.*;
+import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.util.PrimitiveIterator;
-import java.util.Random;
-import java.util.Vector;
+import java.util.*;
+import java.util.List;
 import java.util.stream.IntStream;
 
-public class Scene extends GridPanel implements ActionListener {
+public class Scene extends GridPanel implements State, ActionListener {
     public Vector<Entity> entities = new Vector<>();
     private Vector<Food> foodVector = new Vector<>();
     private Vector<Enemy> enemyVector = new Vector<>();
     private Player pacman;
+    TreeSearch ASTS;
+    EnemyGoalTest goalTest;
     Timer timer = new Timer(200, this);
     private int xDir = 1, yDir = 0;
     private int tick = 0, n;
@@ -34,10 +33,39 @@ public class Scene extends GridPanel implements ActionListener {
 
     Scene(int N, double s) {
         super(N, s, s);
+        goalTest = new EnemyGoalTest();
+        var heuristic = new EnemyHeuristicFunction(this);
+        var search = new AStarFunction(heuristic);
+        ASTS = new TreeSearch(new BestFirstFrontier(search));
         this.n = N;
         generateScene();
     }
 
+    public Scene getActionResult(Action action) {
+        var cell = (Cell) action;
+        if (cell.isPacman()) {
+            if (cell.x == pacman.getX() - 1) pacman.tryMoveLeft();
+            else if (cell.x == pacman.getX() + 1) pacman.tryMoveRight();
+            else if (cell.y == pacman.getY() + 1) pacman.tryMoveDown();
+            else if (cell.y == pacman.getY() - 1) pacman.tryMoveUp();
+        } else {
+
+        }
+        return this;
+    }
+
+    public TreeMap<Cell, Vector<Cell>> getApplicableActions() {
+        var result = new TreeMap<Cell, Vector<Cell>>();
+        var pacmanNeighbors = getGrid()[pacman.getX()][pacman.getY()].getNeighbors(getGrid(), false);
+        result.put(getGrid()[pacman.getX()][pacman.getY()], pacmanNeighbors);
+        for(Enemy enemy: enemyVector) {
+            var enemyNeighbors = getGrid()[enemy.getX()][enemy.getY()].getNeighbors(getGrid(), false);
+            result.put(getGrid()[enemy.getX()][enemy.getY()], enemyNeighbors);
+        }
+        return result;
+    }
+    public Player getPacman() {return pacman;}
+    public Vector<Enemy> getEnemies() {return enemyVector;}
     private void generateScene() {
         // creating the maze from a code generated hard coded array
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
@@ -169,16 +197,25 @@ public class Scene extends GridPanel implements ActionListener {
         }
     }
 
+    public Node calculateEnemyMovement() {
+        var roots = new Vector<Node>();
+        for (Enemy enemy: enemyVector) {
+            roots.add(new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0));
+        }
+        return ASTS.getSolution(roots, goalTest);
+    }
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         // dynamic change
         movePacman(xDir, yDir);
         tick++;
+        calculateEnemyMovement();
         if (tick / 10 >= 1 && this.getFood() < 3) {
             generateFood(1);
             entities.add(foodVector.lastElement());
             tick = 0;
         }
+
         repaint();
     }
 }
