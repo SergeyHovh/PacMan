@@ -1,7 +1,6 @@
 package com.company.Helpers;
 
 import com.company.Search.Action;
-import com.company.Search.State;
 
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
@@ -106,5 +105,13 @@ public class Cell extends Rectangle2D.Double implements Action {
 
     public void setWall(boolean wall) {
         this.wall = wall;
+    }
+
+    public double getI() {
+        return i;
+    }
+
+    public double getJ() {
+        return j;
     }
 }

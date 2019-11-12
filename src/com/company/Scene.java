@@ -2,7 +2,11 @@ package com.company;
 
 import com.company.Helpers.Cell;
 import com.company.Helpers.GridPanel;
-import com.company.Models.*;
+import com.company.Models.Enemy;
+import com.company.Models.Entity;
+import com.company.Models.Food;
+import com.company.Models.Player;
+import com.company.Search.Action;
 import com.company.Search.*;
 
 import javax.swing.Timer;
@@ -11,7 +15,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.util.*;
-import java.util.List;
 import java.util.stream.IntStream;
 
 public class Scene extends GridPanel implements State, ActionListener {
@@ -54,20 +57,29 @@ public class Scene extends GridPanel implements State, ActionListener {
         return this;
     }
 
-    public TreeMap<Cell, Vector<Cell>> getApplicableActions() {
-        var result = new TreeMap<Cell, Vector<Cell>>();
+    public Map<Cell, Vector<Cell>> getApplicableActions() {
+        var result = new HashMap<Cell, Vector<Cell>>();
         var pacmanNeighbors = getGrid()[pacman.getX()][pacman.getY()].getNeighbors(getGrid(), false);
         result.put(getGrid()[pacman.getX()][pacman.getY()], pacmanNeighbors);
-        for(Enemy enemy: enemyVector) {
+        for (Enemy enemy : enemyVector) {
             var enemyNeighbors = getGrid()[enemy.getX()][enemy.getY()].getNeighbors(getGrid(), false);
             result.put(getGrid()[enemy.getX()][enemy.getY()], enemyNeighbors);
         }
         return result;
     }
-    public Player getPacman() {return pacman;}
-    public Vector<Enemy> getEnemies() {return enemyVector;}
+
+    public Player getPacman() {
+        return pacman;
+    }
+
+    public Vector<Enemy> getEnemies() {
+        return enemyVector;
+    }
+
     private void generateScene() {
         // creating the maze from a code generated hard coded array
+        generateMaze(Constants.MAP);
+
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
         generateFood(5);
         generateEnemies(5);
@@ -114,29 +126,31 @@ public class Scene extends GridPanel implements State, ActionListener {
         super.keyTyped(e);
         switch (e.getKeyCode()) {
             case KeyEvent.VK_DOWN:
-//                this.pacman.tryMoveDown();
-                xDir = 0;
-                yDir = -1;
+                this.pacman.tryMoveDown();
+//                xDir = 0;
+//                yDir = -1;
                 break;
             case KeyEvent.VK_UP:
-//                this.pacman.tryMoveUp();
-                xDir = 0;
-                yDir = 1;
+                this.pacman.tryMoveUp();
+//                xDir = 0;
+//                yDir = 1;
                 break;
             case KeyEvent.VK_LEFT:
-//                this.pacman.tryMoveLeft();
-                xDir = -1;
-                yDir = 0;
+                this.pacman.tryMoveLeft();
+//                xDir = -1;
+//                yDir = 0;
                 break;
             case KeyEvent.VK_RIGHT:
-//                this.pacman.tryMoveRight();
-                xDir = 1;
-                yDir = 0;
+                this.pacman.tryMoveRight();
+//                xDir = 1;
+//                yDir = 0;
                 break;
             case KeyEvent.VK_SPACE:
-                timer.start();
+//                timer.start();
                 break;
         }
+        System.out.println("pxikner");
+        System.out.println("calculateEnemyMovement() = " + calculateEnemyMovement());
     }
 
     private void generateFood(int quantity) {
@@ -199,15 +213,16 @@ public class Scene extends GridPanel implements State, ActionListener {
 
     public Node calculateEnemyMovement() {
         var roots = new Vector<Node>();
-        for (Enemy enemy: enemyVector) {
+        for (Enemy enemy : enemyVector) {
             roots.add(new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0));
         }
         return ASTS.getSolution(roots, goalTest);
     }
+
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         // dynamic change
-        movePacman(xDir, yDir);
+//        movePacman(xDir, yDir);
         tick++;
         calculateEnemyMovement();
         if (tick / 10 >= 1 && this.getFood() < 3) {

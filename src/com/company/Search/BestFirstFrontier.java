@@ -9,10 +9,12 @@ public class BestFirstFrontier implements Frontier {
         frontier = new PriorityQueue<Node>(Comparator.comparingDouble(node -> node.value));
         function = func;
     }
+
     public BestFirstFrontier(NodeFunction func, PriorityQueue<Node> _frontier) {
         frontier = _frontier;
         function = func;
     }
+
     private Queue<Node> frontier;
     private NodeFunction function;
 
@@ -21,13 +23,14 @@ public class BestFirstFrontier implements Frontier {
         n.value = this.function.produce(n);
         frontier.add(n);
     }
+
     @Override
     public boolean isEmpty() {
         return frontier.isEmpty();
     }
 
     @Override
-    public boolean contains(Node n){
+    public boolean contains(Node n) {
         return frontier.contains(n);
     }
 

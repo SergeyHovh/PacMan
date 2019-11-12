@@ -1,5 +1,7 @@
 package com.company.Search;
 
+import java.util.Objects;
+
 public class Node {
 	public final Node parent;
 	public final Action action;
@@ -17,16 +19,34 @@ public class Node {
 		cost = this.parent != null ? this.parent.cost + this.action.cost() : 0;
 	}
 
-	public boolean equals(Object obj) {
-		if (getClass() != obj.getClass()) return false;
-		Node that = (Node)obj;
-		return that.state.equals(this.state);
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		Node node = (Node) o;
+		return getDepth() == node.getDepth() &&
+				cost == node.cost &&
+				Double.compare(node.value, value) == 0 &&
+				Objects.equals(parent, node.parent) &&
+				Objects.equals(action, node.action) &&
+				Objects.equals(state, node.state);
 	}
 
-	public int hashCode(){
-		return (parent != null ? parent.state.hashCode() : 0) + state.hashCode();
+	@Override
+	public int hashCode() {
+		return Objects.hash(parent, action, state, getDepth(), cost, value);
 	}
+
 	public int getDepth() {
 		return depth;
+	}
+
+	@Override
+	public String toString() {
+		return "Node{" +
+				"depth=" + depth +
+				", cost=" + cost +
+				", value=" + value +
+				'}';
 	}
 }
