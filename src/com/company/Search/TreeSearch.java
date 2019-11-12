@@ -1,5 +1,8 @@
 package com.company.Search;
 
+import com.company.Helpers.Cell;
+
+import java.awt.*;
 import java.util.Vector;
 
 public class TreeSearch implements Search {
@@ -19,8 +22,8 @@ public class TreeSearch implements Search {
                 if (test.isGoal(leaf.state)) {
                     return leaf;
                 } else {
-                    for (var action : leaf.state.getApplicableActions().get(root.action)) {
-                        State newState = leaf.state.getActionResult(action);
+                    for (Action action : leaf.state.getApplicableActions(root.action)) {
+                        State newState = leaf.state.getActionResult(action, root.action);
                         frontier.addToFrontier(new Node(leaf, action, newState, 0, 0));
                         generatedNodes++;
                     }

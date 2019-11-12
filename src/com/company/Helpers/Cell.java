@@ -31,10 +31,10 @@ public class Cell extends Rectangle2D.Double implements Action {
         Vector<Cell> result = new Vector<>();
         int rows = grid.length;
         int cols = grid[0].length;
-        if (i > 0) result.add(grid[i - 1][j]);
-        if (i < rows - 1) result.add(grid[i + 1][j]);
-        if (j > 0) result.add(grid[i][j - 1]);
-        if (j < cols - 1) result.add(grid[i][j + 1]);
+        if (i > 0 && !grid[i - 1][j].isWall()) result.add(grid[i - 1][j]);
+        if (i < rows - 1 && !grid[i + 1][j].isWall()) result.add(grid[i + 1][j]);
+        if (j > 0 && !grid[i][j - 1].isWall()) result.add(grid[i][j - 1]);
+        if (j < cols - 1 && !grid[i][j + 1].isWall()) result.add(grid[i][j + 1]);
         if (diagonals) {
             if (i > 0 && j > 0) result.add(grid[i - 1][j - 1]);
             if (i > 0 && j < cols - 1) result.add(grid[i - 1][j + 1]);
@@ -107,11 +107,11 @@ public class Cell extends Rectangle2D.Double implements Action {
         this.wall = wall;
     }
 
-    public double getI() {
+    public int getI() {
         return i;
     }
 
-    public double getJ() {
+    public int getJ() {
         return j;
     }
 }

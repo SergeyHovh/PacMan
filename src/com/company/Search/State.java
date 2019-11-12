@@ -6,9 +6,9 @@ import java.util.Map;
 import java.util.Vector;
 
 public interface State {
-	Map<Cell, Vector<Cell>> getApplicableActions();
+	Vector<Cell> getApplicableActions(Action agent);
 
-	State getActionResult(Action action);
+	State getActionResult(Action action, Action agent);
 
 	boolean equals(Object that);
 

@@ -4,12 +4,17 @@ import com.company.Helpers.Cell;
 import com.company.Scene;
 
 import java.awt.*;
+import java.util.UUID;
 
 public class Player extends Entity {
     private int points = 0;
 
     public Player(int x, int y, int N, Scene gridPanel) {
         super(x, y, N, gridPanel);
+        color = Color.BLUE;
+    }
+    public Player(int x, int y, int N, UUID id, Scene gridPanel) {
+        super(x, y, N, id, gridPanel);
         color = Color.BLUE;
     }
 
@@ -45,7 +50,7 @@ public class Player extends Entity {
         }
     }
 
-    private void interact(int x, int y) {
+    protected void interact(int x, int y) {
         Cell cell = grid[x][y];
         if (cell.isFood()) {
             panel.entities.remove(new Food(x, y, N, panel));

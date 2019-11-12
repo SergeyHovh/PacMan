@@ -27,9 +27,14 @@ public class Scene extends GridPanel implements State, ActionListener {
     Timer timer = new Timer(200, this);
     private int xDir = 1, yDir = 0;
     private int tick = 0, n;
+    private double s;
 
     Scene(int N, double w, double h) {
         super(N, w, h);
+        goalTest = new EnemyGoalTest();
+        var heuristic = new EnemyHeuristicFunction(this);
+        var search = new AStarFunction(heuristic);
+        ASTS = new TreeSearch(new BestFirstFrontier(search));
         this.n = N;
         generateScene();
     }
@@ -41,31 +46,60 @@ public class Scene extends GridPanel implements State, ActionListener {
         var search = new AStarFunction(heuristic);
         ASTS = new TreeSearch(new BestFirstFrontier(search));
         this.n = N;
+        this.s = s;
         generateScene();
     }
 
-    public Scene getActionResult(Action action) {
-        var cell = (Cell) action;
-        if (cell.isPacman()) {
-            if (cell.x == pacman.getX() - 1) pacman.tryMoveLeft();
-            else if (cell.x == pacman.getX() + 1) pacman.tryMoveRight();
-            else if (cell.y == pacman.getY() + 1) pacman.tryMoveDown();
-            else if (cell.y == pacman.getY() - 1) pacman.tryMoveUp();
-        } else {
-
-        }
-        return this;
+    Scene(Scene that) {
+        super(that.getN(), that.getS(), that.getS());
+        goalTest = new EnemyGoalTest();
+        var heuristic = new EnemyHeuristicFunction(this);
+        var search = new AStarFunction(heuristic);
+        ASTS = new TreeSearch(new BestFirstFrontier(search));
+        this.n = that.getN();
+        this.s = that.getS();
+        generateMaze(Constants.MAP); // TODO should be updated once the maze is dynamic
+        pacman = new Player(that.pacman.getX(), that.pacman.getY(), that.pacman.getN(), that.pacman.getId(), this);
+        copyExistingFood(that);
+        copyExistingEnemies(that);
+        entities.addAll(foodVector);
+        entities.addAll(enemyVector);
+        entities.add(pacman);
     }
 
-    public Map<Cell, Vector<Cell>> getApplicableActions() {
-        var result = new HashMap<Cell, Vector<Cell>>();
-        var pacmanNeighbors = getGrid()[pacman.getX()][pacman.getY()].getNeighbors(getGrid(), false);
-        result.put(getGrid()[pacman.getX()][pacman.getY()], pacmanNeighbors);
-        for (Enemy enemy : enemyVector) {
-            var enemyNeighbors = getGrid()[enemy.getX()][enemy.getY()].getNeighbors(getGrid(), false);
-            result.put(getGrid()[enemy.getX()][enemy.getY()], enemyNeighbors);
+
+    public Scene getActionResult(Action action, Action agent) {
+        var newScene = new Scene(this);
+        var cell = (Cell) action;
+        var agentCell = (Cell) agent;
+        if (agentCell.isPacman()) {
+            if (cell.getI() == newScene.pacman.getX() - 1) newScene.pacman.tryMoveLeft();
+            else if (cell.getI() == newScene.pacman.getX() + 1) newScene.pacman.tryMoveRight();
+            else if (cell.getJ() == newScene.pacman.getY() + 1) newScene.pacman.tryMoveDown();
+            else if (cell.getJ() == newScene.pacman.getY() - 1) newScene.pacman.tryMoveUp();
+        } else if (agentCell.isEnemy()){
+            var enemyOpt = newScene.enemyVector.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
+            if (enemyOpt.isPresent()) {
+                var enemy = enemyOpt.get();
+                if (cell.getI() == enemy.getX() - 1) enemy.tryMoveLeft();
+                else if (cell.getI() == enemy.getX() + 1) enemy.tryMoveRight();
+                else if (cell.getJ() == enemy.getY() + 1) enemy.tryMoveDown();
+                else if (cell.getJ() == enemy.getY() - 1) enemy.tryMoveUp();
+            }
         }
-        return result;
+        return newScene;
+    }
+
+    public Vector<Cell> getApplicableActions(Action agent) {
+//        var result = new HashMap<Cell, Vector<Cell>>();
+//        var pacmanNeighbors = getGrid()[pacman.getX()][pacman.getY()].getNeighbors(getGrid(), false);
+//        result.put(getGrid()[pacman.getX()][pacman.getY()], pacmanNeighbors);
+//        for (Enemy enemy : enemyVector) {
+//            var enemyNeighbors = getGrid()[enemy.getX()][enemy.getY()].getNeighbors(getGrid(), false);
+//            result.put(getGrid()[enemy.getX()][enemy.getY()], enemyNeighbors);
+//        }
+//        return result;
+        return ((Cell)agent).getNeighbors(this.getGrid(), false);
     }
 
     public Player getPacman() {
@@ -76,14 +110,23 @@ public class Scene extends GridPanel implements State, ActionListener {
         return enemyVector;
     }
 
+    public int getN() {
+        return n;
+    }
+
+    public double getS() {
+        return s;
+    }
+
     private void generateScene() {
         // creating the maze from a code generated hard coded array
         generateMaze(Constants.MAP);
 
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
         generateFood(5);
-        generateEnemies(5);
+//        generateEnemies(5);
         entities.addAll(foodVector);
+        enemyVector.add(new Enemy(pacman.getX()+1, pacman.getY(), pacman.getN(), this));
         entities.addAll(enemyVector);
         entities.add(pacman);
     }
@@ -124,6 +167,7 @@ public class Scene extends GridPanel implements State, ActionListener {
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyTyped(e);
+        repaint();
         switch (e.getKeyCode()) {
             case KeyEvent.VK_DOWN:
                 this.pacman.tryMoveDown();
@@ -171,6 +215,18 @@ public class Scene extends GridPanel implements State, ActionListener {
         foodVector.addAll(food);
     }
 
+    private void copyExistingFood(Scene scene) {
+        Vector<Food> food = new Vector<>();
+        var quantity = scene.getFood();
+        var cnt = 0;
+        for (var f : scene.foodVector) {
+            if (cnt >= quantity) break;
+            food.add(new Food(f.getX(), f.getY(), f.getN(), f.getId(), scene));
+            cnt--;
+        }
+        this.foodVector = food;
+    }
+
     private void generateEnemies(int quantity) {
         Vector<Enemy> enemy = new Vector<>();
         var random = new Random();
@@ -186,6 +242,14 @@ public class Scene extends GridPanel implements State, ActionListener {
             }
         }
         enemyVector.addAll(enemy);
+    }
+
+    private void copyExistingEnemies(Scene scene) {
+        Vector<Enemy> enemies = new Vector<>();
+        for (var f : scene.getEnemies()) {
+            enemies.add(new Enemy(f.getX(), f.getY(), f.getN(), f.getId(), scene));
+        }
+        this.enemyVector = enemies;
     }
 
     /**
@@ -224,7 +288,6 @@ public class Scene extends GridPanel implements State, ActionListener {
         // dynamic change
 //        movePacman(xDir, yDir);
         tick++;
-        calculateEnemyMovement();
         if (tick / 10 >= 1 && this.getFood() < 3) {
             generateFood(1);
             entities.add(foodVector.lastElement());
