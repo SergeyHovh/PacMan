@@ -1,16 +1,18 @@
 package com.company.Search;
 
-import com.company.Helpers.Cell;
 
-import java.awt.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.Vector;
 
-public class TreeSearch implements Search {
+public class GraphSearch implements Search {
     private Frontier frontier;
+    private Set<Node> explored;
     private int generatedNodes;
 
-    public TreeSearch(Frontier _frontier) {
+    public GraphSearch(Frontier _frontier) {
         frontier = _frontier;
+        explored = new LinkedHashSet<>();
         generatedNodes = 0;
     }
 
@@ -20,10 +22,14 @@ public class TreeSearch implements Search {
             while (!frontier.isEmpty()) {
                 Node leaf = frontier.removeFromFrontier();
                 if (test.isGoal(leaf.state)) {
+                    System.out.println(generatedNodes + " nodes generated");
                     return leaf;
-                } else {
-                    for (Action action : leaf.state.getApplicableActions(root.action)) {
-                        State newState = leaf.state.getActionResult(action, root.action);
+                }
+                explored.add(leaf);
+                for (Action action : leaf.state.getApplicableActions(leaf.action)) {
+                    State newState = leaf.state.getActionResult(action, leaf.action);
+                    Node nodeToAdd = new Node(leaf, action, newState, 0, 0);
+                    if (!explored.contains(nodeToAdd) && !frontier.contains(nodeToAdd)) {
                         frontier.addToFrontier(new Node(leaf, action, newState, 0, 0));
                         generatedNodes++;
                     }

@@ -22,8 +22,8 @@ public class Scene extends GridPanel implements State, ActionListener {
     private Vector<Food> foodVector = new Vector<>();
     private Vector<Enemy> enemyVector = new Vector<>();
     private Player pacman;
-    TreeSearch ASTS;
-    EnemyGoalTest goalTest;
+    private GraphSearch ASTS;
+    private EnemyGoalTest goalTest;
     Timer timer = new Timer(200, this);
     private int xDir = 1, yDir = 0;
     private int tick = 0, n;
@@ -34,7 +34,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         goalTest = new EnemyGoalTest();
         var heuristic = new EnemyHeuristicFunction(this);
         var search = new AStarFunction(heuristic);
-        ASTS = new TreeSearch(new BestFirstFrontier(search));
+        ASTS = new GraphSearch(new BestFirstFrontier(search));
         this.n = N;
         generateScene();
     }
@@ -44,7 +44,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         goalTest = new EnemyGoalTest();
         var heuristic = new EnemyHeuristicFunction(this);
         var search = new AStarFunction(heuristic);
-        ASTS = new TreeSearch(new BestFirstFrontier(search));
+        ASTS = new GraphSearch(new BestFirstFrontier(search));
         this.n = N;
         this.s = s;
         generateScene();
@@ -55,7 +55,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         goalTest = new EnemyGoalTest();
         var heuristic = new EnemyHeuristicFunction(this);
         var search = new AStarFunction(heuristic);
-        ASTS = new TreeSearch(new BestFirstFrontier(search));
+        ASTS = new GraphSearch(new BestFirstFrontier(search));
         this.n = that.getN();
         this.s = that.getS();
         generateMaze(Constants.MAP); // TODO should be updated once the maze is dynamic
@@ -78,27 +78,20 @@ public class Scene extends GridPanel implements State, ActionListener {
             else if (cell.getJ() == newScene.pacman.getY() + 1) newScene.pacman.tryMoveDown();
             else if (cell.getJ() == newScene.pacman.getY() - 1) newScene.pacman.tryMoveUp();
         } else if (agentCell.isEnemy()){
-            var enemyOpt = newScene.enemyVector.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
-            if (enemyOpt.isPresent()) {
-                var enemy = enemyOpt.get();
-                if (cell.getI() == enemy.getX() - 1) enemy.tryMoveLeft();
-                else if (cell.getI() == enemy.getX() + 1) enemy.tryMoveRight();
-                else if (cell.getJ() == enemy.getY() + 1) enemy.tryMoveDown();
-                else if (cell.getJ() == enemy.getY() - 1) enemy.tryMoveUp();
-            }
+            moveBasedOnTwoCells(newScene, agentCell, cell);
         }
         return newScene;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        var that = (Scene)o;
+        return Arrays.equals(that.getGrid(), this.getGrid());
+    }
+
     public Vector<Cell> getApplicableActions(Action agent) {
-//        var result = new HashMap<Cell, Vector<Cell>>();
-//        var pacmanNeighbors = getGrid()[pacman.getX()][pacman.getY()].getNeighbors(getGrid(), false);
-//        result.put(getGrid()[pacman.getX()][pacman.getY()], pacmanNeighbors);
-//        for (Enemy enemy : enemyVector) {
-//            var enemyNeighbors = getGrid()[enemy.getX()][enemy.getY()].getNeighbors(getGrid(), false);
-//            result.put(getGrid()[enemy.getX()][enemy.getY()], enemyNeighbors);
-//        }
-//        return result;
         return ((Cell)agent).getNeighbors(this.getGrid(), false);
     }
 
@@ -114,7 +107,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         return n;
     }
 
-    public double getS() {
+    private double getS() {
         return s;
     }
 
@@ -126,7 +119,8 @@ public class Scene extends GridPanel implements State, ActionListener {
         generateFood(5);
 //        generateEnemies(5);
         entities.addAll(foodVector);
-        enemyVector.add(new Enemy(pacman.getX()+1, pacman.getY(), pacman.getN(), this));
+        enemyVector.add(new Enemy(pacman.getX()+3, pacman.getY(), pacman.getN(), this));
+        enemyVector.add(new Enemy(pacman.getX()-4, pacman.getY(), pacman.getN(), this));
         entities.addAll(enemyVector);
         entities.add(pacman);
     }
@@ -191,10 +185,9 @@ public class Scene extends GridPanel implements State, ActionListener {
                 break;
             case KeyEvent.VK_SPACE:
 //                timer.start();
+                calculateEnemyMovement();
                 break;
         }
-        System.out.println("pxikner");
-        System.out.println("calculateEnemyMovement() = " + calculateEnemyMovement());
     }
 
     private void generateFood(int quantity) {
@@ -275,14 +268,44 @@ public class Scene extends GridPanel implements State, ActionListener {
         }
     }
 
-    public Node calculateEnemyMovement() {
+    private void calculateEnemyMovement() {
         var roots = new Vector<Node>();
         for (Enemy enemy : enemyVector) {
             roots.add(new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0));
         }
-        return ASTS.getSolution(roots, goalTest);
+        var solution = ASTS.getSolution(roots, goalTest);
+
+        Stack<Node> stack = new Stack<Node>();
+        Node node = solution;
+        while (node != null) {
+            stack.push(node);
+            node = node.parent;
+        }
+        var agent = stack.pop().action;
+        node = stack.pop();
+        var action = node.action;
+        moveBasedOnTwoCells(this, agent, action);
     }
 
+    private void moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
+        var enemyOpt = scene.enemyVector.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
+        if (enemyOpt.isPresent()) {
+            var enemy = enemyOpt.get();
+            if (cell.getI() == enemy.getX() - 1) {
+                enemy.tryMoveLeft();
+                cell.setEnemy(true);
+            } else if (cell.getI() == enemy.getX() + 1) {
+                enemy.tryMoveRight();
+                cell.setEnemy(true);
+            } else if (cell.getJ() == enemy.getY() + 1) {
+                enemy.tryMoveDown();
+                cell.setEnemy(true);
+            } else if (cell.getJ() == enemy.getY() - 1) {
+                enemy.tryMoveUp();
+                cell.setEnemy(true);
+            }
+        }
+    }
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         // dynamic change

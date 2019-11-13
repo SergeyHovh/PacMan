@@ -20,8 +20,10 @@ public class BestFirstFrontier implements Frontier {
 
     @Override
     public void addToFrontier(Node n) {
-        n.value = this.function.produce(n);
-        frontier.add(n);
+        if (!contains(n)) {
+            n.value = this.function.produce(n);
+            frontier.add(n);
+        }
     }
 
     @Override

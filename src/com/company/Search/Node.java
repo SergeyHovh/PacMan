@@ -1,20 +1,21 @@
 package com.company.Search;
 
+import com.company.Helpers.Cell;
+import com.company.Scene;
+
 import java.util.Objects;
 
 public class Node {
 	public final Node parent;
-	public final Action action;
-	public final State state;
-	public final int depth;
-	public final int cost;
-	public double value;
+	public final Cell action;
+	final Scene state;
+	final int cost;
+	double value;
 
 	public Node(Node parent, Action action, State state, int depth, double value) {
 		this.parent = parent;
-		this.action = action;
-		this.state = state;
-		this.depth = depth;
+		this.action = (Cell)action;
+		this.state = (Scene)state;
 		this.value = value;
 		cost = this.parent != null ? this.parent.cost + this.action.cost() : 0;
 	}
@@ -24,29 +25,13 @@ public class Node {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
 		Node node = (Node) o;
-		return getDepth() == node.getDepth() &&
-				cost == node.cost &&
-				Double.compare(node.value, value) == 0 &&
-				Objects.equals(parent, node.parent) &&
-				Objects.equals(action, node.action) &&
-				Objects.equals(state, node.state);
+		var a = this.state.equals(node.state);
+		var b = this.action.equals(node.action); // TODO wtf
+		return a && b;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(parent, action, state, getDepth(), cost, value);
-	}
-
-	public int getDepth() {
-		return depth;
-	}
-
-	@Override
-	public String toString() {
-		return "Node{" +
-				"depth=" + depth +
-				", cost=" + cost +
-				", value=" + value +
-				'}';
+		return Objects.hash(parent, action, state, cost, value);
 	}
 }

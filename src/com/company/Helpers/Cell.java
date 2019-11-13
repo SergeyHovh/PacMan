@@ -63,8 +63,11 @@ public class Cell extends Rectangle2D.Double implements Action {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        if (!super.equals(o)) return false;
+//        if (!super.equals(o)) return false;
         Cell cell = (Cell) o;
+        if (cell.i == 18) {
+            var a = 1;
+        }
         return i == cell.i &&
                 j == cell.j &&
                 Objects.equals(color, cell.color);

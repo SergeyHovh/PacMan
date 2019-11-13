@@ -96,10 +96,10 @@ public class Entity {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Entity entity = (Entity) o;
-//        return getX() == entity.getX() &&
-//                getY() == entity.getY() &&
-//                getColor().equals(entity.getColor());
-        return entity.id.equals(this.id);
+        return (getX() == entity.getX() &&
+                getY() == entity.getY() &&
+                getColor().equals(entity.getColor())) ||
+        entity.id.equals(this.id);
     }
 
     @Override
