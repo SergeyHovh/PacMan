@@ -2,7 +2,6 @@ package com.company.Models;
 
 import com.company.Helpers.Cell;
 import com.company.Scene;
-import com.company.Search.Node;
 
 import java.awt.*;
 import java.util.Objects;
@@ -105,6 +104,15 @@ public class Entity {
     @Override
     public int hashCode() {
         return Objects.hash(getX(), getY(), getColor());
+    }
+
+    @Override
+    public String toString() {
+        return "Entity{" +
+                "x=" + x +
+                ", y=" + y +
+                ", color=" + color +
+                '}';
     }
 
     protected void interact(int x, int y) { }

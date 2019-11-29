@@ -77,7 +77,7 @@ public class Scene extends GridPanel implements State, ActionListener {
             else if (cell.getI() == newScene.pacman.getX() + 1) newScene.pacman.tryMoveRight();
             else if (cell.getJ() == newScene.pacman.getY() + 1) newScene.pacman.tryMoveDown();
             else if (cell.getJ() == newScene.pacman.getY() - 1) newScene.pacman.tryMoveUp();
-        } else if (agentCell.isEnemy()){
+        } else if (agentCell.isEnemy()) {
             moveBasedOnTwoCells(newScene, agentCell, cell);
         }
         return newScene;
@@ -87,12 +87,12 @@ public class Scene extends GridPanel implements State, ActionListener {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        var that = (Scene)o;
+        var that = (Scene) o;
         return Arrays.equals(that.getGrid(), this.getGrid());
     }
 
     public Vector<Cell> getApplicableActions(Action agent) {
-        return ((Cell)agent).getNeighbors(this.getGrid(), false);
+        return ((Cell) agent).getNeighbors(this.getGrid(), false);
     }
 
     public Player getPacman() {
@@ -116,11 +116,13 @@ public class Scene extends GridPanel implements State, ActionListener {
         generateMaze(Constants.MAP);
 
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
+        System.out.println(pacman.getX() + " " + pacman.getY());
         generateFood(5);
 //        generateEnemies(5);
+        entities.add(new Food(17, 23, n, this));
         entities.addAll(foodVector);
-        enemyVector.add(new Enemy(pacman.getX()+3, pacman.getY(), pacman.getN(), this));
-        enemyVector.add(new Enemy(pacman.getX()-4, pacman.getY(), pacman.getN(), this));
+        enemyVector.add(new Enemy(pacman.getX() + 3, pacman.getY(), pacman.getN(), this));
+//        enemyVector.add(new Enemy(pacman.getX() - 4, pacman.getY(), pacman.getN(), this));
         entities.addAll(enemyVector);
         entities.add(pacman);
     }
@@ -273,6 +275,12 @@ public class Scene extends GridPanel implements State, ActionListener {
         for (Enemy enemy : enemyVector) {
             roots.add(new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0));
         }
+//        for (Entity entity : entities) {
+//            Cell cell = getGrid()[entity.getX()][entity.getY()];
+//            if (cell.isEnemy()) {
+//                roots.add(new Node(null, cell, this, 0, 0));
+//            }
+//        }
         var solution = ASTS.getSolution(roots, goalTest);
 
         Stack<Node> stack = new Stack<Node>();
@@ -281,31 +289,72 @@ public class Scene extends GridPanel implements State, ActionListener {
             stack.push(node);
             node = node.parent;
         }
-        var agent = stack.pop().action;
-        node = stack.pop();
-        var action = node.action;
-        moveBasedOnTwoCells(this, agent, action);
-    }
 
-    private void moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
-        var enemyOpt = scene.enemyVector.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
-        if (enemyOpt.isPresent()) {
-            var enemy = enemyOpt.get();
-            if (cell.getI() == enemy.getX() - 1) {
-                enemy.tryMoveLeft();
-                cell.setEnemy(true);
-            } else if (cell.getI() == enemy.getX() + 1) {
-                enemy.tryMoveRight();
-                cell.setEnemy(true);
-            } else if (cell.getJ() == enemy.getY() + 1) {
-                enemy.tryMoveDown();
-                cell.setEnemy(true);
-            } else if (cell.getJ() == enemy.getY() - 1) {
-                enemy.tryMoveUp();
-                cell.setEnemy(true);
-            }
+        if (!stack.isEmpty() && stack.size() > 1) {
+            var agent = stack.pop().action;
+            node = stack.pop();
+            var action = node.action;
+            action.setColor(Color.CYAN);
+            moveBasedOnTwoCells(this, agent, action);
         }
     }
+
+//    private void moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
+////        var enemyOpt = scene.entities.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
+//
+//        Enemy enemy = null;
+//        for (int i = 0; i < entities.size(); i++) {
+//            Entity entity = entities.get(i);
+//            Cell current = getGrid()[entity.getX()][entity.getY()];
+//            if (current.isEnemy()) {
+//                System.out.println("pxikner");
+//                enemy = (Enemy) entity;
+//                entities.removeElement(entity);
+//            }
+//        }
+//
+//        if (enemy != null) {
+//            if (cell.getI() == enemy.getX() - 1) {
+//                enemy.tryMoveLeft();
+//            } else if (cell.getI() == enemy.getX() + 1) {
+//                enemy.tryMoveRight();
+//            } else if (cell.getJ() == enemy.getY() + 1) {
+//                enemy.tryMoveDown();
+//            } else if (cell.getJ() == enemy.getY() - 1) {
+//                enemy.tryMoveUp();
+//            }
+//            entities.add(enemy);
+//        }
+//    }
+
+    private void moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
+//        var enemyOpt = scene.enemyVector.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
+        Enemy enemyOpt = null;
+        for (Enemy enemy : scene.enemyVector) {
+            if (enemy.getX() == agentCell.getI() && enemy.getY() == agentCell.getJ() && agentCell.isEnemy()) {
+                enemyOpt = enemy;
+            }
+        }
+        if (enemyOpt != null) {
+            scene.entities.remove(enemyOpt);
+//            var enemy = enemyOpt.get();
+            if (cell.getI() == enemyOpt.getX() - 1) {
+                enemyOpt.tryMoveLeft();
+                cell.setEnemy(true);
+            } else if (cell.getI() == enemyOpt.getX() + 1) {
+                enemyOpt.tryMoveRight();
+                cell.setEnemy(true);
+            } else if (cell.getJ() == enemyOpt.getY() + 1) {
+                enemyOpt.tryMoveDown();
+                cell.setEnemy(true);
+            } else if (cell.getJ() == enemyOpt.getY() - 1) {
+                enemyOpt.tryMoveUp();
+                cell.setEnemy(true);
+            }
+            scene.entities.add(enemyOpt);
+        }
+    }
+
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         // dynamic change

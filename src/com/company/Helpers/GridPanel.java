@@ -96,15 +96,16 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
 
     @Override
     public void keyTyped(KeyEvent keyEvent) {
-//        repaint();
+        repaint();
     }
 
     @Override
     public void keyPressed(KeyEvent keyEvent) {
+        repaint();
     }
 
     @Override
     public void keyReleased(KeyEvent keyEvent) {
-//        repaint();
+        repaint();
     }
 }
