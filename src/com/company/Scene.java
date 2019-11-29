@@ -32,13 +32,16 @@ public class Scene extends GridPanel implements State, ActionListener {
     Scene(int N, double w, double h) {
         super(N, w, h);
         goalTest = new EnemyGoalTest();
-        var heuristic = new EnemyHeuristicFunction(this);
-        var search = new AStarFunction(heuristic);
-        ASTS = new GraphSearch(new BestFirstFrontier(search));
+        setAStar();
         this.n = N;
         generateScene();
     }
 
+    private void setAStar() {
+        var heuristic = new EnemyHeuristicFunction(this);
+        var search = new AStarFunction(heuristic);
+        ASTS = new GraphSearch(new BestFirstFrontier(search));
+    }
     Scene(int N, double s) {
         super(N, s, s);
         goalTest = new EnemyGoalTest();
@@ -118,10 +121,10 @@ public class Scene extends GridPanel implements State, ActionListener {
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
         System.out.println(pacman.getX() + " " + pacman.getY());
         generateFood(5);
-//        generateEnemies(5);
-        entities.add(new Food(17, 23, n, this));
-        entities.addAll(foodVector);
-        enemyVector.add(new Enemy(pacman.getX() + 3, pacman.getY(), pacman.getN(), this));
+        generateEnemies(5);
+//        entities.add(new Food(17, 23, n, this));
+        entities.addAll (foodVector);
+//        enemyVector.add(new Enemy(pacman.getX() + 3, pacman.getY(), pacman.getN(), this));
 //        enemyVector.add(new Enemy(pacman.getX() - 4, pacman.getY(), pacman.getN(), this));
         entities.addAll(enemyVector);
         entities.add(pacman);
@@ -275,12 +278,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         for (Enemy enemy : enemyVector) {
             roots.add(new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0));
         }
-//        for (Entity entity : entities) {
-//            Cell cell = getGrid()[entity.getX()][entity.getY()];
-//            if (cell.isEnemy()) {
-//                roots.add(new Node(null, cell, this, 0, 0));
-//            }
-//        }
+        setAStar();
         var solution = ASTS.getSolution(roots, goalTest);
 
         Stack<Node> stack = new Stack<Node>();
@@ -294,41 +292,14 @@ public class Scene extends GridPanel implements State, ActionListener {
             var agent = stack.pop().action;
             node = stack.pop();
             var action = node.action;
-            action.setColor(Color.CYAN);
             moveBasedOnTwoCells(this, agent, action);
+            for (Enemy enemy : this.enemyVector) {
+                System.out.println(enemy.getX() + " " + enemy.getY());
+            }
         }
     }
 
-//    private void moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
-////        var enemyOpt = scene.entities.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
-//
-//        Enemy enemy = null;
-//        for (int i = 0; i < entities.size(); i++) {
-//            Entity entity = entities.get(i);
-//            Cell current = getGrid()[entity.getX()][entity.getY()];
-//            if (current.isEnemy()) {
-//                System.out.println("pxikner");
-//                enemy = (Enemy) entity;
-//                entities.removeElement(entity);
-//            }
-//        }
-//
-//        if (enemy != null) {
-//            if (cell.getI() == enemy.getX() - 1) {
-//                enemy.tryMoveLeft();
-//            } else if (cell.getI() == enemy.getX() + 1) {
-//                enemy.tryMoveRight();
-//            } else if (cell.getJ() == enemy.getY() + 1) {
-//                enemy.tryMoveDown();
-//            } else if (cell.getJ() == enemy.getY() - 1) {
-//                enemy.tryMoveUp();
-//            }
-//            entities.add(enemy);
-//        }
-//    }
-
     private void moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
-//        var enemyOpt = scene.enemyVector.stream().filter(l -> getGrid()[l.getX()][l.getY()].equals(agentCell)).findFirst();
         Enemy enemyOpt = null;
         for (Enemy enemy : scene.enemyVector) {
             if (enemy.getX() == agentCell.getI() && enemy.getY() == agentCell.getJ() && agentCell.isEnemy()) {
@@ -337,7 +308,6 @@ public class Scene extends GridPanel implements State, ActionListener {
         }
         if (enemyOpt != null) {
             scene.entities.remove(enemyOpt);
-//            var enemy = enemyOpt.get();
             if (cell.getI() == enemyOpt.getX() - 1) {
                 enemyOpt.tryMoveLeft();
                 cell.setEnemy(true);
