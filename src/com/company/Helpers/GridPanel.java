@@ -40,10 +40,19 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
         Graphics2D graphics2D = (Graphics2D) g;
         for (Cell[] rectangle2DS : grid) {
             for (Cell rectangle2D : rectangle2DS) {
-                graphics2D.setColor(rectangle2D.getColor());
-                graphics2D.fill(rectangle2D);
-                graphics2D.setColor(Color.BLACK);
-                graphics2D.draw(rectangle2D);
+                if (!rectangle2D.isEmpty() && !rectangle2D.isWall()) {
+                    graphics2D.setColor(Color.BLACK);
+                    graphics2D.fill(rectangle2D);
+                    graphics2D.setColor(rectangle2D.getColor());
+                    var width = (int)rectangle2D.getWidth();
+                    var factor = rectangle2D.isFood() ? 2 : 1;
+                    graphics2D.fillOval((int)rectangle2D.getCenterX() - width/(2 * factor), (int)rectangle2D.getCenterY() - width/(2*factor), width / factor, width / factor);
+                } else {
+                    graphics2D.setColor(rectangle2D.getColor());
+                    graphics2D.fill(rectangle2D);
+                    graphics2D.setColor(rectangle2D.getBorder());
+                    graphics2D.draw(rectangle2D);
+                }
             }
         }
     }

@@ -50,4 +50,9 @@ public class Enemy extends Entity {
     protected void interact(int x, int y) {
         super.interact(x, y);
     }
+
+    @Override
+    public boolean equals(Object o) {
+        return o.getClass() == this.getClass() ? ((Enemy)o).getId().equals(getId()) : super.equals(o);
+    }
 }

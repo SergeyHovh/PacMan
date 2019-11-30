@@ -9,10 +9,12 @@ import java.util.Vector;
 
 public class Cell extends Rectangle2D.Double implements Action {
     private Color color;
+    private Color border;
     private int i, j;
     private boolean enemy = false;
     private boolean pacman = false;
     private boolean food = false;
+    private boolean empty = false;
     private boolean wall = false;
 
     Cell(double x, double y, double w, double h) {
@@ -20,6 +22,7 @@ public class Cell extends Rectangle2D.Double implements Action {
         this.i = (int) x;
         this.j = (int) y;
         color = Color.WHITE;
+        border = Color.WHITE;
     }
 
     @Override
@@ -48,8 +51,25 @@ public class Cell extends Rectangle2D.Double implements Action {
         return color;
     }
 
+    public void setEmpty(boolean empty) {
+        this.empty = empty;
+    }
+
+    @Override
+    public boolean isEmpty() {
+        return empty;
+    }
+
+    public Color getBorder() {
+        return border;
+    }
+
     public void setColor(Color color) {
         this.color = color;
+    }
+
+    public void setBorder(Color border) {
+        this.border = border;
     }
 
     public void reset() {

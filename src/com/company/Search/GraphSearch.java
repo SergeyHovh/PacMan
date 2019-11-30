@@ -14,36 +14,22 @@ public class GraphSearch implements Search {
         generatedNodes = 0;
     }
 
-    public Node getSolution(Vector<Node> roots, GoalTest test, NodeFunction function) {
-        Node root = null;
-        var cost = Double.MAX_VALUE;
-        for (Node enemy : roots) {
-            var newCost = function.produce(enemy);
-            if (newCost < cost) {
-                root = enemy;
-                cost = newCost;
+    public Node getSolution(Node root, GoalTest test, NodeFunction function) {
+        frontier.addToFrontier(root);
+        while (!frontier.isEmpty()) {
+            Node leaf = frontier.removeFromFrontier();
+            if (test.isGoal(leaf.state) || generatedNodes >= 200) {
+                System.out.println(generatedNodes + " nodes generated");
+                return leaf;
             }
-        }
-        if (root != null) {
-            long startTime = System.currentTimeMillis();
-            long elapsedTime = 0L;
-            frontier.addToFrontier(root);
-            while (!frontier.isEmpty()) {
-                Node leaf = frontier.removeFromFrontier();
-                if (test.isGoal(leaf.state) || elapsedTime >= 5000) {
-                    System.out.println(generatedNodes + " nodes generated");
-                    return leaf;
+            explored.add(leaf);
+            for (Action action : leaf.state.getApplicableActions(leaf.action)) {
+                State newState = leaf.state.getActionResult(action, leaf.action);
+                Node nodeToAdd = new Node(leaf, action, newState, 0, 0);
+                if (!explored.contains(nodeToAdd) && !frontier.contains(nodeToAdd)) {
+                    frontier.addToFrontier(nodeToAdd);
+                    generatedNodes++;
                 }
-                explored.add(leaf);
-                for (Action action : leaf.state.getApplicableActions(leaf.action)) {
-                    State newState = leaf.state.getActionResult(action, leaf.action);
-                    Node nodeToAdd = new Node(leaf, action, newState, 0, 0);
-                    if (!explored.contains(nodeToAdd) && !frontier.contains(nodeToAdd)) {
-                        frontier.addToFrontier(nodeToAdd);
-                        generatedNodes++;
-                    }
-                }
-                elapsedTime = (new Date()).getTime() - startTime;
             }
         }
         return null;

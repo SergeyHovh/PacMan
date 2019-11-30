@@ -23,7 +23,7 @@ public class Scene extends GridPanel implements State, ActionListener {
     private Vector<Enemy> enemyVector = new Vector<>();
     private Player pacman;
     private GraphSearch ASTS;
-    private AStarFunction search;
+    private NodeFunction search;
     private EnemyGoalTest goalTest;
     Timer timer = new Timer(200, this);
     private int xDir = 1, yDir = 0;
@@ -39,16 +39,14 @@ public class Scene extends GridPanel implements State, ActionListener {
     }
 
     private void setAStar() {
-        var heuristic = new EnemyHeuristicFunction(this);
-        search = new AStarFunction(heuristic);
+        var heuristicFunction = new EnemyHeuristicFunction(this);
+        search = new AStarFunction(heuristicFunction);
         ASTS = new GraphSearch(new BestFirstFrontier(this.search));
     }
     Scene(int N, double s) {
         super(N, s, s);
         goalTest = new EnemyGoalTest();
-        var heuristic = new EnemyHeuristicFunction(this);
-        var search = new AStarFunction(heuristic);
-        ASTS = new GraphSearch(new BestFirstFrontier(search));
+        setAStar();
         this.n = N;
         this.s = s;
         generateScene();
@@ -57,9 +55,7 @@ public class Scene extends GridPanel implements State, ActionListener {
     Scene(Scene that) {
         super(that.getN(), that.getS(), that.getS());
         goalTest = new EnemyGoalTest();
-        var heuristic = new EnemyHeuristicFunction(this);
-        var search = new AStarFunction(heuristic);
-        ASTS = new GraphSearch(new BestFirstFrontier(search));
+        setAStar();
         this.n = that.getN();
         this.s = that.getS();
         generateMaze(Constants.MAP); // TODO should be updated once the maze is dynamic
@@ -142,10 +138,13 @@ public class Scene extends GridPanel implements State, ActionListener {
             Cell cell = getGrid()[entity.getX()][entity.getY()];
             if (entity instanceof Player) {
                 cell.setPacman(true);
+                cell.setEmpty(false);
             } else if (entity instanceof Food) {
                 cell.setFood(true);
+                cell.setEmpty(false);
             } else if (entity instanceof Enemy) {
                 cell.setEnemy(true);
+                cell.setEmpty(false);
             }
             cell.setColor(entity.getColor());
         }
@@ -170,31 +169,19 @@ public class Scene extends GridPanel implements State, ActionListener {
         repaint();
         switch (e.getKeyCode()) {
             case KeyEvent.VK_DOWN:
-                this.pacman.tryMoveDown();
+                if(this.pacman.tryMoveDown())
                 calculateEnemyMovement();
-//                xDir = 0;
-//                yDir = -1;
                 break;
             case KeyEvent.VK_UP:
-                this.pacman.tryMoveUp();
+                if(this.pacman.tryMoveUp())
                 calculateEnemyMovement();
-//                xDir = 0;
-//                yDir = 1;
                 break;
             case KeyEvent.VK_LEFT:
-                this.pacman.tryMoveLeft();
+                if(this.pacman.tryMoveLeft())
                 calculateEnemyMovement();
-//                xDir = -1;
-//                yDir = 0;
                 break;
             case KeyEvent.VK_RIGHT:
-                this.pacman.tryMoveRight();
-                calculateEnemyMovement();
-//                xDir = 1;
-//                yDir = 0;
-                break;
-            case KeyEvent.VK_SPACE:
-//                timer.start();
+                if(this.pacman.tryMoveRight())
                 calculateEnemyMovement();
                 break;
         }
@@ -209,7 +196,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         while (count < quantity) {
             var x = answer.nextInt();
             var y = answer.nextInt();
-            if (getGrid()[x][y].getColor().equals(Color.WHITE)) {
+            if (getGrid()[x][y].isEmpty()) {
                 food.add(new Food(x, y, n, this));
                 count++;
             }
@@ -239,7 +226,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         while (count < quantity) {
             var x = answer.nextInt();
             var y = answer.nextInt();
-            if (getGrid()[x][y].getColor().equals(Color.WHITE)) {
+            if (getGrid()[x][y].isEmpty()) {
                 enemy.add(new Enemy(x, y, n, this));
                 count++;
             }
@@ -266,12 +253,15 @@ public class Scene extends GridPanel implements State, ActionListener {
             for (int j = 0; j < map[0].length; j++) {
                 Cell cell = getGrid()[i][j];
                 if (map[i][j] == 0) {
-                    cell.setColor(Color.WHITE);
+                    cell.setColor(Color.BLACK);
+                    cell.setBorder(Color.BLACK);
                     cell.setFood(false);
                     cell.setEnemy(false);
                     cell.setPacman(false);
+                    cell.setEmpty(true);
                 } else {
-                    cell.setColor(Color.BLACK);
+                    cell.setBorder(Color.GRAY);
+                    cell.setColor(Color.GRAY);
                     cell.setWall(true);
                 }
             }
@@ -279,12 +269,18 @@ public class Scene extends GridPanel implements State, ActionListener {
     }
 
     private void calculateEnemyMovement() {
-        var roots = new Vector<Node>();
+        Node root = null;
+        var cost = Double.MAX_VALUE;
         for (Enemy enemy : enemyVector) {
-            roots.add(new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0));
+            var newRoot = new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0);
+            var newCost = search.produce(newRoot);
+            if (newCost < cost) {
+                root = newRoot;
+                cost = newCost;
+            }
         }
         setAStar();
-        var solution = ASTS.getSolution(roots, goalTest, search);
+        var solution = ASTS.getSolution(root, goalTest, search);
 
         Stack<Node> stack = new Stack<Node>();
         Node node = solution;
@@ -292,19 +288,15 @@ public class Scene extends GridPanel implements State, ActionListener {
             stack.push(node);
             node = node.parent;
         }
-
         if (!stack.isEmpty() && stack.size() > 1) {
             var agent = stack.pop().action;
             node = stack.pop();
             var action = node.action;
             moveBasedOnTwoCells(this, agent, action);
-            for (Enemy enemy : this.enemyVector) {
-                System.out.println(enemy.getX() + " " + enemy.getY());
-            }
         }
     }
 
-    private void moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
+    private Enemy moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
         Enemy enemyOpt = null;
         for (Enemy enemy : scene.enemyVector) {
             if (enemy.getX() == agentCell.getI() && enemy.getY() == agentCell.getJ() && agentCell.isEnemy()) {
@@ -327,7 +319,9 @@ public class Scene extends GridPanel implements State, ActionListener {
                 cell.setEnemy(true);
             }
             scene.entities.add(enemyOpt);
+            return enemyOpt;
         }
+        return null;
     }
 
     @Override

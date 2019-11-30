@@ -8,46 +8,55 @@ import java.util.UUID;
 
 public class Player extends Entity {
     private int points = 0;
+    private boolean isFrozen = false;
 
     public Player(int x, int y, int N, Scene gridPanel) {
         super(x, y, N, gridPanel);
-        color = Color.BLUE;
+        color = Color.YELLOW;
     }
     public Player(int x, int y, int N, UUID id, Scene gridPanel) {
         super(x, y, N, id, gridPanel);
-        color = Color.BLUE;
+        color = Color.YELLOW;
     }
 
     public int getPoints() {
         return points;
     }
 
-    public void tryMoveLeft() {
-        if (this.x > 0 && !getGrid()[this.x - 1][this.y].isWall()) {
+    public boolean tryMoveLeft() {
+        if (!isFrozen && this.x > 0 && !getGrid()[this.x - 1][this.y].isWall()) {
             this.x--;
             interact(this.x, this.y);
+            return true;
         }
+        return false;
     }
 
-    public void tryMoveUp() {
-        if (this.y > 0 && !getGrid()[this.x][this.y - 1].isWall()) {
+    public boolean tryMoveUp() {
+        if (!isFrozen && this.y > 0 && !getGrid()[this.x][this.y - 1].isWall()) {
             this.y--;
             interact(this.x, this.y);
+            return true;
         }
+        return false;
     }
 
-    public void tryMoveRight() {
-        if (this.x < N - 1 && !getGrid()[this.x + 1][this.y].isWall()) {
+    public boolean tryMoveRight() {
+        if (!isFrozen && this.x < N - 1 && !getGrid()[this.x + 1][this.y].isWall()) {
             this.x++;
             interact(this.x, this.y);
+            return true;
         }
+        return false;
     }
 
-    public void tryMoveDown() {
-        if (this.y < N - 1 && !getGrid()[this.x][this.y + 1].isWall()) {
+    public boolean tryMoveDown() {
+        if (!isFrozen && this.y < N - 1 && !getGrid()[this.x][this.y + 1].isWall()) {
             this.y++;
             interact(this.x, this.y);
+            return true;
         }
+        return false;
     }
 
     protected void interact(int x, int y) {
@@ -58,11 +67,8 @@ public class Player extends Entity {
             panel.addFood(-1);
             System.out.println(points);
         } else if (cell.isEnemy()) {
-//             TODO: 11/6/2019 implement better enemy interaction
-//            enemy interaction
-            panel.entities.remove(new Enemy(x, y, N, panel));
-            points--;
-            System.out.println(points);
+            points = 0;
+            isFrozen = true;
         }
     }
 }
