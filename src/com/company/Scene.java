@@ -23,6 +23,7 @@ public class Scene extends GridPanel implements State, ActionListener {
     private Vector<Enemy> enemyVector = new Vector<>();
     private Player pacman;
     private GraphSearch ASTS;
+    private AStarFunction search;
     private EnemyGoalTest goalTest;
     Timer timer = new Timer(200, this);
     private int xDir = 1, yDir = 0;
@@ -39,8 +40,8 @@ public class Scene extends GridPanel implements State, ActionListener {
 
     private void setAStar() {
         var heuristic = new EnemyHeuristicFunction(this);
-        var search = new AStarFunction(heuristic);
-        ASTS = new GraphSearch(new BestFirstFrontier(search));
+        search = new AStarFunction(heuristic);
+        ASTS = new GraphSearch(new BestFirstFrontier(this.search));
     }
     Scene(int N, double s) {
         super(N, s, s);
@@ -170,21 +171,25 @@ public class Scene extends GridPanel implements State, ActionListener {
         switch (e.getKeyCode()) {
             case KeyEvent.VK_DOWN:
                 this.pacman.tryMoveDown();
+                calculateEnemyMovement();
 //                xDir = 0;
 //                yDir = -1;
                 break;
             case KeyEvent.VK_UP:
                 this.pacman.tryMoveUp();
+                calculateEnemyMovement();
 //                xDir = 0;
 //                yDir = 1;
                 break;
             case KeyEvent.VK_LEFT:
                 this.pacman.tryMoveLeft();
+                calculateEnemyMovement();
 //                xDir = -1;
 //                yDir = 0;
                 break;
             case KeyEvent.VK_RIGHT:
                 this.pacman.tryMoveRight();
+                calculateEnemyMovement();
 //                xDir = 1;
 //                yDir = 0;
                 break;
@@ -279,7 +284,7 @@ public class Scene extends GridPanel implements State, ActionListener {
             roots.add(new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0));
         }
         setAStar();
-        var solution = ASTS.getSolution(roots, goalTest);
+        var solution = ASTS.getSolution(roots, goalTest, search);
 
         Stack<Node> stack = new Stack<Node>();
         Node node = solution;

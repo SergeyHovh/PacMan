@@ -1,9 +1,7 @@
 package com.company.Search;
 
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 public class GraphSearch implements Search {
     private Frontier frontier;
@@ -16,12 +14,23 @@ public class GraphSearch implements Search {
         generatedNodes = 0;
     }
 
-    public Node getSolution(Vector<Node> roots, GoalTest test) {
-        for (Node root : roots) {
+    public Node getSolution(Vector<Node> roots, GoalTest test, NodeFunction function) {
+        Node root = null;
+        var cost = Double.MAX_VALUE;
+        for (Node enemy : roots) {
+            var newCost = function.produce(enemy);
+            if (newCost < cost) {
+                root = enemy;
+                cost = newCost;
+            }
+        }
+        if (root != null) {
+            long startTime = System.currentTimeMillis();
+            long elapsedTime = 0L;
             frontier.addToFrontier(root);
             while (!frontier.isEmpty()) {
                 Node leaf = frontier.removeFromFrontier();
-                if (test.isGoal(leaf.state)) {
+                if (test.isGoal(leaf.state) || elapsedTime >= 5000) {
                     System.out.println(generatedNodes + " nodes generated");
                     return leaf;
                 }
@@ -34,6 +43,7 @@ public class GraphSearch implements Search {
                         generatedNodes++;
                     }
                 }
+                elapsedTime = (new Date()).getTime() - startTime;
             }
         }
         return null;

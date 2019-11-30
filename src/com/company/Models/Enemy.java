@@ -10,6 +10,7 @@ public class Enemy extends Entity {
     public Enemy(int x, int y, int n, Scene panel) {
         super(x, y, n, panel);
         color = Color.RED;
+        System.out.println("enemy " + getX() + " " + getY());
     }
 
     public Enemy(int x, int y, int n, UUID id, Scene panel) {

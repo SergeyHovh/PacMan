@@ -10,12 +10,12 @@ import java.util.Vector;
 public class Cell extends Rectangle2D.Double implements Action {
     private Color color;
     private int i, j;
-    boolean enemy = false;
-    boolean pacman = false;
-    boolean food = false;
-    boolean wall = false;
+    private boolean enemy = false;
+    private boolean pacman = false;
+    private boolean food = false;
+    private boolean wall = false;
 
-    public Cell(double x, double y, double w, double h) {
+    Cell(double x, double y, double w, double h) {
         super(x * w, y * h, w, h);
         this.i = (int) x;
         this.j = (int) y;
@@ -24,7 +24,7 @@ public class Cell extends Rectangle2D.Double implements Action {
 
     @Override
     public int cost() {
-        return 0;
+        return 1;
     }
 
     public Vector<Cell> getNeighbors(Cell[][] grid, boolean diagonals) {
