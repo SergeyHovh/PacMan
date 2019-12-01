@@ -43,6 +43,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         search = new AStarFunction(heuristicFunction);
         ASTS = new GraphSearch(new BestFirstFrontier(this.search));
     }
+
     Scene(int N, double s) {
         super(N, s, s);
         goalTest = new EnemyGoalTest();
@@ -118,11 +119,14 @@ public class Scene extends GridPanel implements State, ActionListener {
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
         System.out.println(pacman.getX() + " " + pacman.getY());
         generateFood(5);
-        generateEnemies(5);
+//        generateEnemies(5);
 //        entities.add(new Food(17, 23, n, this));
-        entities.addAll (foodVector);
-//        enemyVector.add(new Enemy(pacman.getX() + 3, pacman.getY(), pacman.getN(), this));
-//        enemyVector.add(new Enemy(pacman.getX() - 4, pacman.getY(), pacman.getN(), this));
+        enemyVector.add(new Enemy(13, 11, n, this));
+        enemyVector.add(new Enemy(14, 11, n, this));
+        enemyVector.add(new Enemy(15, 11, n, this));
+        enemyVector.add(new Enemy(16, 11, n, this));
+        enemyVector.add(new Enemy(17, 11, n, this));
+        entities.addAll(foodVector);
         entities.addAll(enemyVector);
         entities.add(pacman);
     }
@@ -150,40 +154,43 @@ public class Scene extends GridPanel implements State, ActionListener {
         }
     }
 
-    private void movePacman(int x, int y) {
+    private boolean movePacman(int x, int y) {
+        boolean moving = false;
         if (x == 1) {
-            pacman.tryMoveRight();
+            moving = pacman.tryMoveRight();
         } else if (x == -1) {
-            pacman.tryMoveLeft();
+            moving = pacman.tryMoveLeft();
         } else if (y == 1) {
-            pacman.tryMoveUp();
+            moving = pacman.tryMoveUp();
         } else if (y == -1) {
-            pacman.tryMoveDown();
+            moving = pacman.tryMoveDown();
         }
+        return moving;
     }
 
     // listeners
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyTyped(e);
-        repaint();
         switch (e.getKeyCode()) {
-            case KeyEvent.VK_DOWN:
-                if(this.pacman.tryMoveDown())
-                calculateEnemyMovement();
-                break;
-            case KeyEvent.VK_UP:
-                if(this.pacman.tryMoveUp())
-                calculateEnemyMovement();
-                break;
             case KeyEvent.VK_LEFT:
-                if(this.pacman.tryMoveLeft())
-                calculateEnemyMovement();
+                xDir = -1;
+                yDir = 0;
                 break;
             case KeyEvent.VK_RIGHT:
-                if(this.pacman.tryMoveRight())
-                calculateEnemyMovement();
+                xDir = 1;
+                yDir = 0;
                 break;
+            case KeyEvent.VK_DOWN:
+                xDir = 0;
+                yDir = -1;
+                break;
+            case KeyEvent.VK_UP:
+                xDir = 0;
+                yDir = 1;
+                break;
+            case KeyEvent.VK_SPACE:
+                timer.start();
         }
     }
 
@@ -327,14 +334,15 @@ public class Scene extends GridPanel implements State, ActionListener {
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
         // dynamic change
-//        movePacman(xDir, yDir);
+        if (movePacman(xDir, yDir)) {
+            calculateEnemyMovement();
+        }
         tick++;
-        if (tick / 10 >= 1 && this.getFood() < 3) {
+        if (tick / 10 >= 1) {
             generateFood(1);
             entities.add(foodVector.lastElement());
             tick = 0;
         }
-
         repaint();
     }
 }

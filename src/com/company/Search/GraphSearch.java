@@ -1,7 +1,8 @@
 package com.company.Search;
 
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 public class GraphSearch implements Search {
     private Frontier frontier;
@@ -19,7 +20,6 @@ public class GraphSearch implements Search {
         while (!frontier.isEmpty()) {
             Node leaf = frontier.removeFromFrontier();
             if (test.isGoal(leaf.state) || generatedNodes >= 200) {
-                System.out.println(generatedNodes + " nodes generated");
                 return leaf;
             }
             explored.add(leaf);
