@@ -106,14 +106,5 @@ public class Entity {
         return Objects.hash(getX(), getY(), getColor());
     }
 
-    @Override
-    public String toString() {
-        return "Entity{" +
-                "x=" + x +
-                ", y=" + y +
-                ", color=" + color +
-                '}';
-    }
-
     protected void interact(int x, int y) { }
 }

@@ -25,7 +25,7 @@ public class GraphSearch implements Search {
             explored.add(leaf);
             for (Action action : leaf.state.getApplicableActions(leaf.action)) {
                 State newState = leaf.state.getActionResult(action, leaf.action);
-                Node nodeToAdd = new Node(leaf, action, newState, 0, 0);
+                Node nodeToAdd = new Node(leaf, action, newState, 0);
                 if (!explored.contains(nodeToAdd) && !frontier.contains(nodeToAdd)) {
                     frontier.addToFrontier(nodeToAdd);
                     generatedNodes++;

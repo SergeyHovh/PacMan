@@ -64,11 +64,8 @@ public class Player extends Entity {
         if (cell.isFood()) {
             panel.entities.remove(new Food(x, y, N, panel));
             points++;
+            this.panel.setPoints(points);
             panel.addFood(-1);
-            System.out.println(points);
-        } else if (cell.isEnemy()) {
-            points = 0;
-            isFrozen = true;
         }
     }
 }

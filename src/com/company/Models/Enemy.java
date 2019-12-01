@@ -1,5 +1,6 @@
 package com.company.Models;
 
+import com.company.Helpers.Cell;
 import com.company.Scene;
 
 import java.awt.*;
@@ -7,10 +8,10 @@ import java.util.UUID;
 
 public class Enemy extends Entity {
 
+    public int direction = 0;
     public Enemy(int x, int y, int n, Scene panel) {
         super(x, y, n, panel);
         color = Color.RED;
-        System.out.println("enemy " + getX() + " " + getY());
     }
 
     public Enemy(int x, int y, int n, UUID id, Scene panel) {
@@ -48,7 +49,12 @@ public class Enemy extends Entity {
 
     @Override
     protected void interact(int x, int y) {
-        super.interact(x, y);
+        Cell cell = grid[x][y];
+        if (!cell.isPacman())
+            super.interact(x, y);
+        else {
+            this.getPanel().endGame();
+        }
     }
 
     @Override

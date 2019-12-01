@@ -12,7 +12,7 @@ public class Node {
 	final int cost;
 	double value;
 
-	public Node(Node parent, Action action, State state, int depth, double value) {
+	public Node(Node parent, Action action, State state, double value) {
 		this.parent = parent;
 		this.action = (Cell)action;
 		this.state = (Scene)state;
@@ -26,7 +26,7 @@ public class Node {
 		if (o == null || getClass() != o.getClass()) return false;
 		Node node = (Node) o;
 		var a = this.state.equals(node.state);
-		var b = this.action.equals(node.action); // TODO wtf
+		var b = this.action.equals(node.action);
 		return a && b;
 	}
 

@@ -9,6 +9,7 @@ import com.company.Models.Player;
 import com.company.Search.Action;
 import com.company.Search.*;
 
+import javax.swing.*;
 import javax.swing.Timer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -25,18 +26,9 @@ public class Scene extends GridPanel implements State, ActionListener {
     private GraphSearch ASTS;
     private NodeFunction search;
     private EnemyGoalTest goalTest;
-    Timer timer = new Timer(200, this);
-    private int xDir = 1, yDir = 0;
+    private Timer timer = new Timer(200, this);
     private int tick = 0, n;
     private double s;
-
-    Scene(int N, double w, double h) {
-        super(N, w, h);
-        goalTest = new EnemyGoalTest();
-        setAStar();
-        this.n = N;
-        generateScene();
-    }
 
     private void setAStar() {
         var heuristicFunction = new EnemyHeuristicFunction(this);
@@ -53,13 +45,15 @@ public class Scene extends GridPanel implements State, ActionListener {
         generateScene();
     }
 
-    Scene(Scene that) {
+    private Scene(Scene that) {
         super(that.getN(), that.getS(), that.getS());
         goalTest = new EnemyGoalTest();
         setAStar();
+        this.tick = 0;
+        this.timer = null;
         this.n = that.getN();
         this.s = that.getS();
-        generateMaze(Constants.MAP); // TODO should be updated once the maze is dynamic
+        generateMaze(Constants.MAP);
         pacman = new Player(that.pacman.getX(), that.pacman.getY(), that.pacman.getN(), that.pacman.getId(), this);
         copyExistingFood(that);
         copyExistingEnemies(that);
@@ -73,12 +67,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         var newScene = new Scene(this);
         var cell = (Cell) action;
         var agentCell = (Cell) agent;
-        if (agentCell.isPacman()) {
-            if (cell.getI() == newScene.pacman.getX() - 1) newScene.pacman.tryMoveLeft();
-            else if (cell.getI() == newScene.pacman.getX() + 1) newScene.pacman.tryMoveRight();
-            else if (cell.getJ() == newScene.pacman.getY() + 1) newScene.pacman.tryMoveDown();
-            else if (cell.getJ() == newScene.pacman.getY() - 1) newScene.pacman.tryMoveUp();
-        } else if (agentCell.isEnemy()) {
+        if (agentCell.isEnemy()) {
             moveBasedOnTwoCells(newScene, agentCell, cell);
         }
         return newScene;
@@ -117,15 +106,8 @@ public class Scene extends GridPanel implements State, ActionListener {
         generateMaze(Constants.MAP);
 
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
-        System.out.println(pacman.getX() + " " + pacman.getY());
         generateFood(5);
-//        generateEnemies(5);
-//        entities.add(new Food(17, 23, n, this));
-        enemyVector.add(new Enemy(13, 11, n, this));
-        enemyVector.add(new Enemy(14, 11, n, this));
-        enemyVector.add(new Enemy(15, 11, n, this));
-        enemyVector.add(new Enemy(16, 11, n, this));
-        enemyVector.add(new Enemy(17, 11, n, this));
+        generateEnemies(2);
         entities.addAll(foodVector);
         entities.addAll(enemyVector);
         entities.add(pacman);
@@ -154,40 +136,22 @@ public class Scene extends GridPanel implements State, ActionListener {
         }
     }
 
-    private boolean movePacman(int x, int y) {
-        boolean moving = false;
-        if (x == 1) {
-            moving = pacman.tryMoveRight();
-        } else if (x == -1) {
-            moving = pacman.tryMoveLeft();
-        } else if (y == 1) {
-            moving = pacman.tryMoveUp();
-        } else if (y == -1) {
-            moving = pacman.tryMoveDown();
-        }
-        return moving;
-    }
-
     // listeners
     @Override
     public void keyPressed(KeyEvent e) {
         super.keyTyped(e);
         switch (e.getKeyCode()) {
             case KeyEvent.VK_LEFT:
-                xDir = -1;
-                yDir = 0;
+                pacman.tryMoveLeft();
                 break;
             case KeyEvent.VK_RIGHT:
-                xDir = 1;
-                yDir = 0;
+              pacman.tryMoveRight();
                 break;
             case KeyEvent.VK_DOWN:
-                xDir = 0;
-                yDir = -1;
+              pacman.tryMoveDown();
                 break;
             case KeyEvent.VK_UP:
-                xDir = 0;
-                yDir = 1;
+              pacman.tryMoveUp();
                 break;
             case KeyEvent.VK_SPACE:
                 timer.start();
@@ -279,7 +243,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         Node root = null;
         var cost = Double.MAX_VALUE;
         for (Enemy enemy : enemyVector) {
-            var newRoot = new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0, 0);
+            var newRoot = new Node(null, getGrid()[enemy.getX()][enemy.getY()], this, 0);
             var newCost = search.produce(newRoot);
             if (newCost < cost) {
                 root = newRoot;
@@ -289,7 +253,7 @@ public class Scene extends GridPanel implements State, ActionListener {
         setAStar();
         var solution = ASTS.getSolution(root, goalTest, search);
 
-        Stack<Node> stack = new Stack<Node>();
+        Stack<Node> stack = new Stack<>();
         Node node = solution;
         while (node != null) {
             stack.push(node);
@@ -299,13 +263,28 @@ public class Scene extends GridPanel implements State, ActionListener {
             var agent = stack.pop().action;
             node = stack.pop();
             var action = node.action;
-            moveBasedOnTwoCells(this, agent, action);
+            var enemy = moveBasedOnTwoCells(this, agent, action);
+            for (Enemy otherEnemy : enemyVector) {
+                if (!otherEnemy.equals(enemy)) {
+                    var cell = getGrid()[otherEnemy.getX()][otherEnemy.getY()];
+                    var neighbors = cell.getNeighborsPositioned(getGrid(), false);
+                    if (otherEnemy.direction == 0 || neighbors.elementAt(otherEnemy.direction - 1) == null
+                            || neighbors.stream().filter(Objects::nonNull).count() > 2) {
+                        var newDir = neighbors.stream().filter(Objects::nonNull).findFirst().get();
+                        var rnd = neighbors.indexOf(newDir);
+                        otherEnemy.direction = rnd;
+                        moveBasedOnTwoCells(this, cell, neighbors.elementAt(rnd));
+                    } else {
+                        moveBasedOnTwoCells(this, cell, neighbors.elementAt(otherEnemy.direction - 1));
+                    }
+                }
+            }
         }
     }
 
     private Enemy moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
         Enemy enemyOpt = null;
-        for (Enemy enemy : scene.enemyVector) {
+        for (Enemy enemy :  scene.enemyVector) {
             if (enemy.getX() == agentCell.getI() && enemy.getY() == agentCell.getJ() && agentCell.isEnemy()) {
                 enemyOpt = enemy;
             }
@@ -333,10 +312,8 @@ public class Scene extends GridPanel implements State, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        // dynamic change
-        if (movePacman(xDir, yDir)) {
+        if (tick % (new Random().nextInt(3) + 1) == 0)
             calculateEnemyMovement();
-        }
         tick++;
         if (tick / 10 >= 1) {
             generateFood(1);
@@ -344,5 +321,13 @@ public class Scene extends GridPanel implements State, ActionListener {
             tick = 0;
         }
         repaint();
+    }
+    public void endGame() {
+        JOptionPane.showMessageDialog(
+              this,
+              "Damn! You died!",
+              "Game Over",
+              JOptionPane.PLAIN_MESSAGE);
+        System.exit(0);
     }
 }

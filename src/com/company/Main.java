@@ -11,5 +11,6 @@ public class Main {
         Scene scene = new Scene(N, S);
         // add grid panel to the window
         base.addComponent(scene);
+        base.setVisible(true);
     }
 }

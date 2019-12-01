@@ -12,6 +12,7 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
     private Cell[][] grid;
     private double scaleX, scaleY;
     private int I, J;
+    private JComponent points;
 
     protected int getFood() {
         return food;
@@ -22,6 +23,8 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
     }
 
     protected GridPanel(int N, double w, double h) {
+        this.points = new JLabel("Points: 0");
+        this.add(points);
         this.grid = new Cell[N][N];
         this.scaleX = (w - 10) / N;
         this.scaleY = (h - 35) / N;
@@ -55,6 +58,10 @@ public class GridPanel extends JPanel implements MouseListener, KeyListener {
                 }
             }
         }
+    }
+
+    public void setPoints(int point) {
+        ((JLabel)this.points).setText("Points: " + point);
     }
 
     /**
