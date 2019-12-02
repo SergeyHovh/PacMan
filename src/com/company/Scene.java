@@ -107,7 +107,7 @@ public class Scene extends GridPanel implements State, ActionListener {
 
         pacman = new Player(n / 2, 4 * n / 5 - 1, n, this);
         generateFood(5);
-        generateEnemies(2);
+        generateEnemies(4);
         entities.addAll(foodVector);
         entities.addAll(enemyVector);
         entities.add(pacman);
@@ -145,13 +145,13 @@ public class Scene extends GridPanel implements State, ActionListener {
                 pacman.tryMoveLeft();
                 break;
             case KeyEvent.VK_RIGHT:
-              pacman.tryMoveRight();
+                pacman.tryMoveRight();
                 break;
             case KeyEvent.VK_DOWN:
-              pacman.tryMoveDown();
+                pacman.tryMoveDown();
                 break;
             case KeyEvent.VK_UP:
-              pacman.tryMoveUp();
+                pacman.tryMoveUp();
                 break;
             case KeyEvent.VK_SPACE:
                 timer.start();
@@ -253,38 +253,57 @@ public class Scene extends GridPanel implements State, ActionListener {
         setAStar();
         var solution = ASTS.getSolution(root, goalTest, search);
 
-        Stack<Node> stack = new Stack<>();
-        Node node = solution;
-        while (node != null) {
-            stack.push(node);
-            node = node.parent;
+        if (solution != null) {
+            Stack<Node> stack = new Stack<>();
+            Node node = solution;
+            while (node != null) {
+                stack.push(node);
+                node = node.parent;
+            }
+            if (!stack.isEmpty() && stack.size() > 1) {
+                var agent = stack.pop().action;
+                node = stack.pop();
+                var action = node.action;
+                var enemy = moveBasedOnTwoCells(this, agent, action);
+                moveRandomly(enemy);
+            }
+        } else {
+            moveRandomly(null);
         }
-        if (!stack.isEmpty() && stack.size() > 1) {
-            var agent = stack.pop().action;
-            node = stack.pop();
-            var action = node.action;
-            var enemy = moveBasedOnTwoCells(this, agent, action);
-            for (Enemy otherEnemy : enemyVector) {
-                if (!otherEnemy.equals(enemy)) {
-                    var cell = getGrid()[otherEnemy.getX()][otherEnemy.getY()];
-                    var neighbors = cell.getNeighborsPositioned(getGrid(), false);
-                    if (otherEnemy.direction == 0 || neighbors.elementAt(otherEnemy.direction - 1) == null
-                            || neighbors.stream().filter(Objects::nonNull).count() > 2) {
-                        var newDir = neighbors.stream().filter(Objects::nonNull).findFirst().get();
-                        var rnd = neighbors.indexOf(newDir);
-                        otherEnemy.direction = rnd;
-                        moveBasedOnTwoCells(this, cell, neighbors.elementAt(rnd));
-                    } else {
-                        moveBasedOnTwoCells(this, cell, neighbors.elementAt(otherEnemy.direction - 1));
+    }
+
+    private void moveRandomly(Enemy enemy) {
+        for (Enemy otherEnemy : enemyVector) {
+            if (!otherEnemy.equals(enemy)) {
+                var cell = getGrid()[otherEnemy.getX()][otherEnemy.getY()];
+                var neighbors = cell.getNeighborsPositioned(getGrid(), false);
+                if (otherEnemy.direction == -1) {
+                    var newDir = neighbors.stream().filter(Objects::nonNull).findAny().get();
+                    var rnd = neighbors.indexOf(newDir);
+                    otherEnemy.direction = rnd;
+                    moveBasedOnTwoCells(this, cell, neighbors.elementAt(rnd));
+                } else if (neighbors.stream().filter(Objects::nonNull).count() > 2 || neighbors.elementAt(otherEnemy.direction) == null) {
+                    var options = new int[]{1, 3};
+                    if (neighbors.elementAt((otherEnemy.direction + options[tick % 2]) % 4) != null) {
+                        moveBasedOnTwoCells(this, cell, neighbors.elementAt((otherEnemy.direction + options[tick % 2]) % 4));
+                        otherEnemy.direction = (otherEnemy.direction + options[tick % 2]) % 4;
                     }
+                    else if (neighbors.elementAt((otherEnemy.direction + options[(tick + 1) % 2]) % 4) != null) {
+                        moveBasedOnTwoCells(this, cell, neighbors.elementAt((otherEnemy.direction + options[(tick + 1) % 2]) % 4));
+                        otherEnemy.direction = (otherEnemy.direction + options[(tick + 1) % 2]) % 4;
+                    } else {
+                        moveBasedOnTwoCells(this, cell, neighbors.elementAt((otherEnemy.direction + 2) % 4));
+                        otherEnemy.direction = (otherEnemy.direction + 2) % 4;
+                    }
+                } else {
+                    moveBasedOnTwoCells(this, cell, neighbors.elementAt(otherEnemy.direction));
                 }
             }
         }
     }
-
     private Enemy moveBasedOnTwoCells(Scene scene, Cell agentCell, Cell cell) {
         Enemy enemyOpt = null;
-        for (Enemy enemy :  scene.enemyVector) {
+        for (Enemy enemy : scene.enemyVector) {
             if (enemy.getX() == agentCell.getI() && enemy.getY() == agentCell.getJ() && agentCell.isEnemy()) {
                 enemyOpt = enemy;
             }
@@ -312,7 +331,7 @@ public class Scene extends GridPanel implements State, ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent actionEvent) {
-        if (tick % (new Random().nextInt(3) + 1) == 0)
+        if (tick % (new Random().nextInt(2) + 1) == 0)
             calculateEnemyMovement();
         tick++;
         if (tick / 10 >= 1) {
@@ -322,12 +341,13 @@ public class Scene extends GridPanel implements State, ActionListener {
         }
         repaint();
     }
+
     public void endGame() {
         JOptionPane.showMessageDialog(
-              this,
-              "Damn! You died!",
-              "Game Over",
-              JOptionPane.PLAIN_MESSAGE);
+                this,
+                "Damn! You died!",
+                "Game Over",
+                JOptionPane.PLAIN_MESSAGE);
         System.exit(0);
     }
 }

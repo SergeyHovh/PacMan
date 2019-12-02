@@ -19,8 +19,11 @@ public class GraphSearch implements Search {
         frontier.addToFrontier(root);
         while (!frontier.isEmpty()) {
             Node leaf = frontier.removeFromFrontier();
-            if (test.isGoal(leaf.state) || generatedNodes >= 200) {
+            if (test.isGoal(leaf.state)) {
                 return leaf;
+            }
+            if (generatedNodes >= 200) {
+                return null;
             }
             explored.add(leaf);
             for (Action action : leaf.state.getApplicableActions(leaf.action)) {

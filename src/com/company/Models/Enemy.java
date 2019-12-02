@@ -4,19 +4,27 @@ import com.company.Helpers.Cell;
 import com.company.Scene;
 
 import java.awt.*;
+import java.util.Random;
 import java.util.UUID;
 
 public class Enemy extends Entity {
-
-    public int direction = 0;
+    private static Color[] possibleColors = {Color.CYAN, Color.RED, Color.PINK, Color.ORANGE};
+    private static int firstPosition = -1;
+    private static int currentPosition = -1;
+    public int direction = -1;
     public Enemy(int x, int y, int n, Scene panel) {
         super(x, y, n, panel);
-        color = Color.RED;
+        if (firstPosition == -1) {
+            firstPosition = (new Random()).nextInt(3);
+            currentPosition = firstPosition;
+        }
+        color = possibleColors[currentPosition % 4];
+        currentPosition++;
     }
 
     public Enemy(int x, int y, int n, UUID id, Scene panel) {
         super(x, y, n, id, panel);
-        color = Color.RED;
+        color = possibleColors[(new Random()).nextInt(3)];
     }
 
     public void tryMoveLeft() {
@@ -59,6 +67,7 @@ public class Enemy extends Entity {
 
     @Override
     public boolean equals(Object o) {
+        if (o == null) return false;
         return o.getClass() == this.getClass() ? ((Enemy)o).getId().equals(getId()) : super.equals(o);
     }
 }

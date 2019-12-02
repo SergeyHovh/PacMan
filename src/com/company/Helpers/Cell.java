@@ -51,16 +51,15 @@ public class Cell extends Rectangle2D.Double implements Action {
         Vector<Cell> result = new Vector<>();
         int rows = grid.length;
         int cols = grid[0].length;
-        if (i > 0 && !grid[i - 1][j].isWall()) {
-            result.add(grid[i - 1][j]);
-        } else {
-            result.add(null);
-        }
-        if (i < rows - 1 && !grid[i + 1][j].isWall()) result.add(grid[i + 1][j]);
+        if (i > 0 && !grid[i - 1][j].isWall()) result.add(grid[i - 1][j]);
         else {
             result.add(null);
         }
         if (j > 0 && !grid[i][j - 1].isWall()) result.add(grid[i][j - 1]);
+        else {
+            result.add(null);
+        }
+        if (i < rows - 1 && !grid[i + 1][j].isWall()) result.add(grid[i + 1][j]);
         else {
             result.add(null);
         }
@@ -69,22 +68,22 @@ public class Cell extends Rectangle2D.Double implements Action {
             result.add(null);
         }
         if (diagonals) {
-            if (i > 0 && j > 0) result.add(grid[i - 1][j - 1]);
-            else {
-                result.add(null);
-            }
-            if (i > 0 && j < cols - 1) result.add(grid[i - 1][j + 1]);
-            else {
-                result.add(null);
-            }
-            if (i < rows - 1 && j > 0) result.add(grid[i + 1][j - 1]);
-            else {
-                result.add(null);
-            }
-            if (i < rows - 1 && j < cols - 1) result.add(grid[i + 1][j + 1]);
-            else {
-                result.add(null);
-            }
+                if (i > 0 && j > 0) result.add(grid[i - 1][j - 1]);
+                else {
+                    result.add(null);
+                }
+                if (i > 0 && j < cols - 1) result.add(grid[i - 1][j + 1]);
+                else {
+                    result.add(null);
+                }
+                if (i < rows - 1 && j > 0) result.add(grid[i + 1][j - 1]);
+                else {
+                    result.add(null);
+                }
+                if (i < rows - 1 && j < cols - 1) result.add(grid[i + 1][j + 1]);
+                else {
+                    result.add(null);
+                }
         }
         return result;
     }
