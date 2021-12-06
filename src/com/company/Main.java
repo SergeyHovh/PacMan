@@ -3,7 +3,7 @@ package com.company;
 import com.company.Helpers.Base;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         final int N = 30;
         final int S = 600;
 
